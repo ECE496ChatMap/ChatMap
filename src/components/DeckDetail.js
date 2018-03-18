@@ -8,7 +8,11 @@ import {
 import { DeckSection } from './DeckSection';
 
 const DeckDetail = ({ topic }) => {
-  const { content, type, userImage } = topic;
+  const { content, category, userImage } = topic;
+
+  console.log('cccccccccc');
+  console.log(content);
+
   const {
     thumbnailStyle,
     headerContentStyle,
@@ -36,7 +40,7 @@ const DeckDetail = ({ topic }) => {
           </DeckSection>
           <DeckSection>
             <View style={styles.contentStyle}>
-              <Text>Type: {type}</Text>
+              <Text>{category}</Text>
             </View>
           </DeckSection>
         </TouchableOpacity>
