@@ -18,6 +18,20 @@ import {
 } from '../components';
 import TopicType from '../assets/categories/TopicType.json';
 
+//////// suppress the continous displaying of 'setting a timer' warning //////
+import { YellowBox } from 'react-native';
+import _ from 'lodash';
+
+
+YellowBox.ignoreWarnings(['Setting a timer']);
+const _console = _.clone(console);
+console.warn = message => {
+  if (message.indexOf('Setting a timer') <= -1) {
+    _console.warn(message);
+  }
+};
+////////////////////////////////////////////////////////////////////////////
+
 const screen = Dimensions.get('window');
 const WINDOW_HEIGHT = screen.height;
 const WINDOW_WIDTH = screen.width;
@@ -33,33 +47,6 @@ const FORM_HEIGHT = (WINDOW_HEIGHT - 200) * 0.9;
 
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
-
-// const markers = [
-//   {
-//     id: 0,
-//     topic: 'Music',
-//     coordinate: {
-//       latitude: MARKER_LATITUDE,
-//       longitude: MARKER_LONGITUDE
-//     }
-//   },
-//   {
-//     id: 1,
-//     topic: 'Sport',
-//     coordinate: {
-//       latitude: MARKER_LATITUDE + 0.004,
-//       longitude: MARKER_LONGITUDE - 0.004
-//     }
-//   },
-//   {
-//     id: 2,
-//     topic: 'Study',
-//     coordinate: {
-//       latitude: MARKER_LATITUDE - 0.004,
-//       longitude: MARKER_LONGITUDE - 0.004
-//     }
-//   }
-// ];
 
 class MapScreen extends Component {
   static navigationOptions = {
@@ -141,13 +128,9 @@ class MapScreen extends Component {
     );
 
     // listen to markers data
-    console.log('------------ didmount');
     var topicsRef = firebase.database().ref('topics');
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
-      console.log('========');
-      console.log(allTopics);
-
       var curMarkers = [];
       var topicId = 0;
       for (var topicKey in allTopics) {
@@ -160,17 +143,19 @@ class MapScreen extends Component {
             longitude: curTopic.region.longitude
           }
         };
-        console.log(curMarkers);
         curMarkers.push(myTopic);
+        topicId++;
       }
 
       this.setState({myMarkers: curMarkers});
     }.bind(this));
-
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
+
+    // detach listener
+    firebase.database().ref('topics').off();
   }
 
   onRegionChange(region) {
@@ -222,7 +207,10 @@ class MapScreen extends Component {
 
     firebase.database().ref().update(updates);
 
-    this.setState({ showForm: false });
+    this.setState({
+      showForm: false,
+      showPin: false
+    });
   };
 
   renderSearchPin() {
@@ -267,12 +255,6 @@ class MapScreen extends Component {
   }
 
   renderMarkers() {
-    console.log('------ renderMarkers');
-    // const { currentUser } = firebase.auth();
-    // firebase.database().ref(`users/${currentUser.uid}/topics`)
-    //   .on('value', snapshot => {
-    //     snapshot.val()
-    //   });
     if (this.state.myMarkers === null) {
       return null;
     }
@@ -284,6 +266,9 @@ class MapScreen extends Component {
             <MapView.Marker
               key={marker.id}
               coordinate={marker.coordinate}
+              onPress={() => this.props.navigation.navigate('deck', {
+                markerId: marker.id
+              })}
             >
               <CustomMarker
                 topic={topic}
@@ -307,7 +292,6 @@ class MapScreen extends Component {
   }
 
   render() {
-    console.log('---------- render');
     return (
       <View style={styles.container}>
         <MapView
