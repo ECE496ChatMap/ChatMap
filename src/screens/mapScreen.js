@@ -34,32 +34,32 @@ const FORM_HEIGHT = (WINDOW_HEIGHT - 200) * 0.9;
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
 
-const markers = [
-  {
-    id: 0,
-    topic: 'Music',
-    coordinate: {
-      latitude: MARKER_LATITUDE,
-      longitude: MARKER_LONGITUDE
-    }
-  },
-  {
-    id: 1,
-    topic: 'Sport',
-    coordinate: {
-      latitude: MARKER_LATITUDE + 0.004,
-      longitude: MARKER_LONGITUDE - 0.004
-    }
-  },
-  {
-    id: 2,
-    topic: 'Study',
-    coordinate: {
-      latitude: MARKER_LATITUDE - 0.004,
-      longitude: MARKER_LONGITUDE - 0.004
-    }
-  }
-];
+// const markers = [
+//   {
+//     id: 0,
+//     topic: 'Music',
+//     coordinate: {
+//       latitude: MARKER_LATITUDE,
+//       longitude: MARKER_LONGITUDE
+//     }
+//   },
+//   {
+//     id: 1,
+//     topic: 'Sport',
+//     coordinate: {
+//       latitude: MARKER_LATITUDE + 0.004,
+//       longitude: MARKER_LONGITUDE - 0.004
+//     }
+//   },
+//   {
+//     id: 2,
+//     topic: 'Study',
+//     coordinate: {
+//       latitude: MARKER_LATITUDE - 0.004,
+//       longitude: MARKER_LONGITUDE - 0.004
+//     }
+//   }
+// ];
 
 class MapScreen extends Component {
   static navigationOptions = {
@@ -92,7 +92,8 @@ class MapScreen extends Component {
         content: null,
         coordinates: null
       },
-      showPin: false
+      showPin: false,
+      myMarkers: null
     };
   }
 
@@ -138,6 +139,34 @@ class MapScreen extends Component {
         });
       }
     );
+
+    // listen to markers data
+    console.log('------------ didmount');
+    var topicsRef = firebase.database().ref('topics');
+    topicsRef.on('value', function(snapshot) {
+      var allTopics = snapshot.val();
+      console.log('========');
+      console.log(allTopics);
+
+      var curMarkers = [];
+      var topicId = 0;
+      for (var topicKey in allTopics) {
+        var curTopic = allTopics[topicKey];
+        var myTopic = {
+          id: topicId,
+          topic: curTopic.category,
+          coordinate: {
+            latitude: curTopic.region.latitude,
+            longitude: curTopic.region.longitude
+          }
+        };
+        console.log(curMarkers);
+        curMarkers.push(myTopic);
+      }
+
+      this.setState({myMarkers: curMarkers});
+    }.bind(this));
+
   }
 
   componentWillUnmount() {
@@ -168,41 +197,33 @@ class MapScreen extends Component {
 
   onTopicSubmit = () => {
     const { topicContent, topicCategory, mapRegion } = this.state;
-    var d = new Date();
-    var currentTime = d.toUTCString();
+    // var d = new Date();
+    var currentTime = Date.now();
+    var myDuration = 3600 * 1000; // 1 hr
 
     const { currentUser } = firebase.auth();
-    // firebase
-    //   .database()
-    //   .ref(`users/${currentUser.uid}/topics`)
-    //   .push({ topicContent, topicCategory, mapRegion, currentTime });
-    // this.setState({ showForm: false });
 
-    this.setState({
-      newTopic: {
-        category: topicCategory,
-        content: topicContent,
-        coordinates: mapRegion
-      },
-      showForm: false
-    });
+    var topicData = {
+      issuer: currentUser.uid,
+      category: topicCategory,
+      content: topicContent,
+      region: mapRegion,
+      timestamp: currentTime,
+      duration: myDuration
+    };
+
+    var newTopicKey = firebase.database().ref().child('topics').push().key;
+
+    var updates = {};
+    updates['/users/' + currentUser.uid + '/topics/' + newTopicKey] = true;
+    updates['/topics/' + newTopicKey] = topicData;
+    updates['/categories/' + topicCategory + '/' + newTopicKey] = true;
+    updates['/chatrooms/' + newTopicKey + '/issuer'] = currentUser.uid;
+
+    firebase.database().ref().update(updates);
+
+    this.setState({ showForm: false });
   };
-
-  renderDumpMarker() {
-    if (this.state.newTopic.category !== null) {
-      return (
-        <MapView.Marker
-          key={5}
-          coordinate={this.state.newTopic.coordinates}
-        >
-          <CustomMarker
-            topic={this.state.newTopic.category}
-            backgroundColor={TopicType[this.state.newTopic.category]}
-          />
-        </MapView.Marker>
-      );
-    }
-  }
 
   renderSearchPin() {
     const coord = {
@@ -246,28 +267,33 @@ class MapScreen extends Component {
   }
 
   renderMarkers() {
+    console.log('------ renderMarkers');
     // const { currentUser } = firebase.auth();
     // firebase.database().ref(`users/${currentUser.uid}/topics`)
     //   .on('value', snapshot => {
     //     snapshot.val()
     //   });
-
-    return (
-      markers.map((marker, i) => {
-        var topic = marker.topic;
-        return (
-          <MapView.Marker
-            key={marker.id}
-            coordinate={marker.coordinate}
-          >
-            <CustomMarker
-              topic={topic}
-              backgroundColor={TopicType[topic]}
-            />
-          </MapView.Marker>
-        );
-      })
-    );
+    if (this.state.myMarkers === null) {
+      return null;
+    }
+    else {
+      return (
+        this.state.myMarkers.map((marker, i) => {
+          var topic = marker.topic;
+          return (
+            <MapView.Marker
+              key={marker.id}
+              coordinate={marker.coordinate}
+            >
+              <CustomMarker
+                topic={topic}
+                backgroundColor={TopicType[topic]}
+              />
+            </MapView.Marker>
+          );
+        })
+      );
+    }
   }
 
   animateToCurrentLocation = async () => {
@@ -281,6 +307,7 @@ class MapScreen extends Component {
   }
 
   render() {
+    console.log('---------- render');
     return (
       <View style={styles.container}>
         <MapView
@@ -294,7 +321,7 @@ class MapScreen extends Component {
           onPress={() => this.setState({ showForm: false })}
         >
           {this.renderMarkers()}
-          {this.renderDumpMarker()}
+
           {this.renderSearchPin()}
         </MapView>
 
