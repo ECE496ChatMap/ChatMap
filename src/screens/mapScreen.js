@@ -1,10 +1,5 @@
 import React, { Component } from 'react';
-import {
-  View,
-  Alert,
-  Dimensions,
-  Text
-} from 'react-native';
+import { View, Alert, Dimensions, Text } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import firebase from 'firebase';
@@ -126,62 +121,9 @@ class MapScreen extends Component {
       }
     );
 
-    this.watchID = navigator.geolocation.watchPosition(
-      position => {
-        this.setState({
-          userRegion: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA
-          }
-        });
-      }
-    );
-  }
-
-  componentWillUnmount() {
-    navigator.geolocation.clearWatch(this.watchID);
-  }
-
-  onRegionChange(region) {
-<<<<<<< HEAD
-    this.setState({ region });
-  }
-
-  getCurrentPosition() {
-    try {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          this.setState({
-            region: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: LATITUDE_DELTA,
-              longitudeDelta: LONGITUDE_DELTA
-            }
-          });
-        },
-        error => {
-          // console.log(error);
-          switch (error.code) {
-            case 1:
-              Alert.alert('', 'Error get current position');
-              break;
-            default:
-              Alert.alert('', 'Default Error get current position');
-          }
-        }
-      );
-    } catch (e) {
-      Alert.alert(e.message || '');
-    }
-  }
-
-  watchPosition() {
     this.watchID = navigator.geolocation.watchPosition(position => {
       this.setState({
-        region: {
+        userRegion: {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           latitudeDelta: LATITUDE_DELTA,
@@ -189,18 +131,19 @@ class MapScreen extends Component {
         }
       });
     });
-=======
+  }
+
+  componentWillUnmount() {
+    navigator.geolocation.clearWatch(this.watchID);
+  }
+
+  onRegionChange(region) {
     this.setState({ mapRegion: region });
->>>>>>> origin/master
   }
 
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal()
       .then(place => {
-<<<<<<< HEAD
-        // console.log(place);
-=======
->>>>>>> origin/master
         // place represents user's selection from the
         // suggestions and it is a simplified Google Place object.
         this.setState({
@@ -241,10 +184,7 @@ class MapScreen extends Component {
   renderDumpMarker() {
     if (this.state.newTopic.category !== null) {
       return (
-        <MapView.Marker
-          key={5}
-          coordinate={this.state.newTopic.coordinates}
-        >
+        <MapView.Marker key={5} coordinate={this.state.newTopic.coordinates}>
           <CustomMarker
             topic={this.state.newTopic.category}
             backgroundColor={TopicType[this.state.newTopic.category]}
@@ -263,14 +203,8 @@ class MapScreen extends Component {
     };
     if (this.state.showPin) {
       return (
-        <MapView.Marker
-          key={6}
-          coordinate={coord}
-        >
-          <CustomMarker
-            topic={'Pin'}
-            backgroundColor={TopicType['Pin']}
-          />
+        <MapView.Marker key={6} coordinate={coord}>
+          <CustomMarker topic={'Pin'} backgroundColor={TopicType['Pin']} />
         </MapView.Marker>
       );
     }
@@ -279,11 +213,20 @@ class MapScreen extends Component {
   renderIssueForm = () => {
     if (this.state.showForm) {
       return (
-        <View style={{marginTop: 30, marginLeft: 20, marginRight: 20, height: FORM_HEIGHT}}>
+        <View
+          style={{
+            marginTop: 30,
+            marginLeft: 20,
+            marginRight: 20,
+            height: FORM_HEIGHT
+          }}
+        >
           <IssueForm
             style={styles.issueFormStyle}
             onContentChange={text => this.setState({ topicContent: text })}
-            onPickerValueChange={(itemValue, itemIndex) => this.setState({ topicCategory: itemValue })}
+            onPickerValueChange={(itemValue, itemIndex) =>
+              this.setState({ topicCategory: itemValue })
+            }
             pickerSelectedValue={this.state.topicCategory}
             onSubmitPress={this.onTopicSubmit.bind(this)}
             onClosePress={() => this.setState({ showForm: false })}
@@ -293,7 +236,7 @@ class MapScreen extends Component {
     }
 
     return null;
-  }
+  };
 
   renderMarkers() {
     // const { currentUser } = firebase.auth();
@@ -302,39 +245,36 @@ class MapScreen extends Component {
     //     snapshot.val()
     //   });
 
-    return (
-      markers.map((marker, i) => {
-        var topic = marker.topic;
-        return (
-          <MapView.Marker
-            key={marker.id}
-            coordinate={marker.coordinate}
-          >
-            <CustomMarker
-              topic={topic}
-              backgroundColor={TopicType[topic]}
-            />
-          </MapView.Marker>
-        );
-      })
-    );
+    return markers.map((marker, i) => {
+      var topic = marker.topic;
+      return (
+        <MapView.Marker key={marker.id} coordinate={marker.coordinate}>
+          <CustomMarker topic={topic} backgroundColor={TopicType[topic]} />
+        </MapView.Marker>
+      );
+    });
   }
 
   animateToCurrentLocation = async () => {
-    this.setState({showPin: false});
-    this._map.animateToRegion({
-      latitude: this.state.userRegion.latitude,
-      longitude: this.state.userRegion.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA
-    }, 2000);
-  }
+    this.setState({ showPin: false });
+    this._map.animateToRegion(
+      {
+        latitude: this.state.userRegion.latitude,
+        longitude: this.state.userRegion.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA
+      },
+      2000
+    );
+  };
 
   render() {
     return (
       <View style={styles.container}>
         <MapView
-          ref={component => {this._map = component;}}
+          ref={component => {
+            this._map = component;
+          }}
           showsUserLocation
           followsUserLocation
           showsMyLocationButton={false}
@@ -361,9 +301,7 @@ class MapScreen extends Component {
         />
 
         <View style={styles.myLocationButton}>
-          <MyLocationButton
-            onPress={() => this.animateToCurrentLocation()}
-          />
+          <MyLocationButton onPress={() => this.animateToCurrentLocation()} />
         </View>
       </View>
     );
@@ -394,7 +332,7 @@ const styles = {
     left: 0,
     right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   issueButtonStyle: {
     height: WINDOW_HEIGHT,

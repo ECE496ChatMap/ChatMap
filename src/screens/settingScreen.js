@@ -5,16 +5,11 @@ import SettingsList from 'react-native-settings-list';
 import { logoutUser } from '../actions';
 
 class SettingScreen extends Component {
-<<<<<<< HEAD
-  static navigationOptions = { headerTitle: 'Settings' };
-
-=======
-  constructor(){
+  constructor() {
     super();
     this.onValueChange = this.onValueChange.bind(this);
-    this.state = {switchValue: false, loggedIn: false};
+    this.state = { switchValue: false, loggedIn: false };
   }
->>>>>>> origin/master
   render() {
     const { navigate } = this.props.navigation;
     return (
@@ -44,14 +39,9 @@ class SettingScreen extends Component {
               }
               title="Display"
               itemWidth={70}
-<<<<<<< HEAD
               titleStyle={{ color: 'black', fontSize: 16 }}
-              hasNavArrow={false}
-=======
-              titleStyle={{color:'black', fontSize: 16}}
               hasNavArrow={true}
-              onPress={()=>navigate('display')}
->>>>>>> origin/master
+              onPress={() => navigate('display')}
             />
             <SettingsList.Item
               icon={
@@ -64,14 +54,9 @@ class SettingScreen extends Component {
               }
               title="Sound & notification"
               itemWidth={70}
-<<<<<<< HEAD
               titleStyle={{ color: 'black', fontSize: 16 }}
-              hasNavArrow={false}
-=======
-              titleStyle={{color:'black', fontSize: 16}}
               hasNavArrow={true}
-              onPress={()=>navigate('notification')}
->>>>>>> origin/master
+              onPress={() => navigate('notification')}
             />
             <SettingsList.Item
               icon={
@@ -82,11 +67,7 @@ class SettingScreen extends Component {
                   />
                 </View>
               }
-<<<<<<< HEAD
-              title="History"
-=======
-              title='Save History'
->>>>>>> origin/master
+              title="Save History"
               itemWidth={70}
               titleStyle={{ color: 'black', fontSize: 16 }}
               hasNavArrow={false}
@@ -107,8 +88,8 @@ class SettingScreen extends Component {
       </View>
     );
   }
-  onValueChange(value){
-    this.setState({switchValue: value});
+  onValueChange(value) {
+    this.setState({ switchValue: value });
   }
 }
 
