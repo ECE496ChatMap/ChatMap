@@ -5,9 +5,12 @@ import {
   Text,
   View,
   Image,
-  ImageBackground
+  ImageBackground,
+  TouchableOpacity, 
+  Button
 } from 'react-native';
 import ProfilePicture from '../../components/ProfilePicture'
+import { StackNavigator } from 'react-navigation';
 
 export default class Header extends Component<{}> {
   render() {
@@ -17,9 +20,9 @@ export default class Header extends Component<{}> {
             <View style={styles.header}>
                 <ProfilePicture />
                 <Text style = {styles.name}> Elon Musk </Text>
+                <Text style = {styles.body}>I am Elon Musk, founder, CEO, and lead designer of SpaceX.</Text>
 
             </View>
-                <Text style = {styles.body}>I am Elon Musk, founder, CEO, and lead designer of SpaceX; co-founder, CEO, and product architect of Tesla Inc.; co-chairman of OpenAI; founder and CEO of Neuralink, and founder of The Boring Company. </Text>
         </ImageBackground>
 
     );
@@ -45,15 +48,18 @@ const styles = StyleSheet.create({
         flex: 1,
         marginTop: 5,
         alignItems: 'center',
-        fontSize: 25,
+        fontSize: 20,
         color: '#fff',
         fontWeight: 'bold'
     },
     body: {
         flex: 1,
-        fontSize: 18,
+        fontSize: 14,
         color: '#fff',
         fontStyle: 'italic'
+    },
+    butt: {
+        flex: 1
     }
 
 });
