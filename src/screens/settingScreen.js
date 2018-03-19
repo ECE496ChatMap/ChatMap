@@ -5,9 +5,18 @@ import SettingsList from 'react-native-settings-list';
 import { logoutUser } from '../actions';
 
 class SettingScreen extends Component {
+<<<<<<< HEAD
   static navigationOptions = { headerTitle: 'Settings' };
 
+=======
+  constructor(){
+    super();
+    this.onValueChange = this.onValueChange.bind(this);
+    this.state = {switchValue: false, loggedIn: false};
+  }
+>>>>>>> origin/master
   render() {
+    const { navigate } = this.props.navigation;
     return (
       <View style={{ backgroundColor: '#f6f6f6', flex: 1 }}>
         <View style={{ backgroundColor: '#f6f6f6', flex: 1 }}>
@@ -35,8 +44,14 @@ class SettingScreen extends Component {
               }
               title="Display"
               itemWidth={70}
+<<<<<<< HEAD
               titleStyle={{ color: 'black', fontSize: 16 }}
               hasNavArrow={false}
+=======
+              titleStyle={{color:'black', fontSize: 16}}
+              hasNavArrow={true}
+              onPress={()=>navigate('display')}
+>>>>>>> origin/master
             />
             <SettingsList.Item
               icon={
@@ -49,8 +64,14 @@ class SettingScreen extends Component {
               }
               title="Sound & notification"
               itemWidth={70}
+<<<<<<< HEAD
               titleStyle={{ color: 'black', fontSize: 16 }}
               hasNavArrow={false}
+=======
+              titleStyle={{color:'black', fontSize: 16}}
+              hasNavArrow={true}
+              onPress={()=>navigate('notification')}
+>>>>>>> origin/master
             />
             <SettingsList.Item
               icon={
@@ -61,10 +82,17 @@ class SettingScreen extends Component {
                   />
                 </View>
               }
+<<<<<<< HEAD
               title="History"
+=======
+              title='Save History'
+>>>>>>> origin/master
               itemWidth={70}
               titleStyle={{ color: 'black', fontSize: 16 }}
               hasNavArrow={false}
+              hasSwitch={true}
+              switchState={this.state.switchValue}
+              switchOnValueChange={this.onValueChange}
             />
             <SettingsList.Item
               title="LOGOUT"
@@ -78,6 +106,9 @@ class SettingScreen extends Component {
         </View>
       </View>
     );
+  }
+  onValueChange(value){
+    this.setState({switchValue: value});
   }
 }
 

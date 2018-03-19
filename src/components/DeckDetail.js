@@ -2,12 +2,13 @@ import React from 'react';
 import {
   Text,
   View,
+  Image,
   TouchableOpacity
 } from 'react-native';
-import { Section } from './common';
+import { DeckSection } from './DeckSection';
 
-const ChatRoomDetail = ({ room }) => {
-  const { question, issuer } = room;
+const DeckDetail = ({ topic }) => {
+  const { content, type, userImage } = topic;
   const {
     thumbnailStyle,
     headerContentStyle,
@@ -18,19 +19,28 @@ const ChatRoomDetail = ({ room }) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity>
-        <Section>
-          <View style={styles.contentStyle}>
-            <Text>Question: {question}</Text>
-          </View>
-        </Section>
-
-        <Section>
-        <View style={styles.contentStyle}>
-          <Text>Issuer: {issuer}</Text>
-        </View>
-        </Section>
-      </TouchableOpacity>
+      <View style={{width: 60, borderRightWidth: 1, borderColor: '#ddd'}}>
+        <TouchableOpacity>
+          <Image
+            source={{uri: userImage}}
+            style={{width: 60, height: 60}}
+          />
+        </TouchableOpacity>
+      </View>
+      <View style={{flexDirection: 'column', flex: 1}}>
+        <TouchableOpacity style={{flexDirection: 'column'}}>
+          <DeckSection>
+            <View style={styles.contentStyle}>
+              <Text>Topic: {content}</Text>
+            </View>
+          </DeckSection>
+          <DeckSection>
+            <View style={styles.contentStyle}>
+              <Text>Type: {type}</Text>
+            </View>
+          </DeckSection>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -48,7 +58,8 @@ const styles = {
     elevation: 1,
     marginLeft: 5,
     marginRight: 5,
-    marginTop: 10
+    marginTop: 10,
+    flexDirection: 'row'
   },
   contentStyle: {
     justifyContent: 'space-around',
@@ -74,4 +85,4 @@ const styles = {
   }
 };
 
-export default ChatRoomDetail;
+export { DeckDetail };

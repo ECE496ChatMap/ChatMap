@@ -1,58 +1,99 @@
-import React, { Component } from 'react';
-import { View, Image, Text } from 'react-native';
-import MapView from 'react-native-maps';
+import React from 'react';
 
-const CustomMarker = ({ coordinate }) => {
-  return (
-    <MapView.Marker
-      coordinate={coordinate}
-    >
+import {
+  StyleSheet,
+  View,
+  Text
+} from 'react-native';
+
+class CustomMarker extends React.Component {
+  render() {
+    const { fontSize, topic, backgroundColor } = this.props;
+    return (
       <View style={styles.container}>
-        <View style={styles.imageView}>
-          <Image
-            style={styles.image}
-            source={require('../assets/images/chatbox-red.jpg')}
-          />
+        <View style={[styles.bubble, {backgroundColor: backgroundColor}]}>
+          <Text style={[styles.topic, { fontSize }]}>{topic}</Text>
         </View>
-        <View style={styles.textView}>
-          <Text style={styles.text}>
-            Music
-          </Text>
-        </View>
+        <View style={styles.arrowBorder} />
+        <View style={[styles.arrow, {borderTopColor: backgroundColor}]} />
       </View>
-    </MapView.Marker>
-  );
-};
-
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    width: 40,
-    height: 30
-  },
-  imageView: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%'
-  },
-  image: {
-    flex: 1,
-    width: 40,
-    height: 30
-  },
-  textView: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'center',
-  },
-  text: {
-    textAlign: 'center',
-    fontSize: 12,
-    color: 'white'
+    );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'column',
+    alignSelf: 'flex-start'
+  },
+  bubble: {
+    flex: 0,
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    backgroundColor: '#FF5A5F',
+    padding: 2,
+    borderRadius: 3,
+    borderColor: 'transparent',
+    borderWidth: 0.5
+  },
+  topic: {
+    color: '#FFFFFF',
+    fontSize: 13
+  },
+  arrow: {
+    backgroundColor: 'transparent',
+    borderWidth: 4,
+    borderColor: 'transparent',
+    borderTopColor: '#FF5A5F',
+    alignSelf: 'center',
+    marginTop: -9
+  },
+  arrowBorder: {
+    backgroundColor: 'transparent',
+    borderWidth: 4,
+    borderColor: 'transparent',
+    borderTopColor: 'transparent',
+    alignSelf: 'center',
+    marginTop: -0.5
+  }
+});
+
+// backup original styles
+// const styles = StyleSheet.create({
+//   container: {
+//     flexDirection: 'column',
+//     alignSelf: 'flex-start',
+//   },
+//   bubble: {
+//     flex: 0,
+//     flexDirection: 'row',
+//     alignSelf: 'flex-start',
+//     backgroundColor: '#FF5A5F',
+//     padding: 2,
+//     borderRadius: 3,
+//     borderColor: '#D23F44',
+//     borderWidth: 0.5,
+//   },
+//   topic: {
+//     color: '#FFFFFF',
+//     fontSize: 13,
+//   },
+//   arrow: {
+//     backgroundColor: 'transparent',
+//     borderWidth: 4,
+//     borderColor: 'transparent',
+//     borderTopColor: '#FF5A5F',
+//     alignSelf: 'center',
+//     marginTop: -9,
+//   },
+//   arrowBorder: {
+//     backgroundColor: 'transparent',
+//     borderWidth: 4,
+//     borderColor: 'transparent',
+//     borderTopColor: '#D23F44',
+//     alignSelf: 'center',
+//     marginTop: -0.5,
+//   },
+// });
 
 export { CustomMarker };

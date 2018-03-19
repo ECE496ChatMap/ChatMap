@@ -19,6 +19,11 @@ class ProfileScreen extends Component {
     return (
       <View style={styles.container}>
         <Header />
+        <Button
+            title='edit'
+            onPress={()=>this.props.navigation.navigate('editProfile')}
+        >
+        </Button>
         <Bar />
       </View>
     );

@@ -1,42 +1,35 @@
 import React, { Component } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 
-const MapInput = ({ value, onChangeText, placeholder }) => {
-  const { inputStyle, labelStyle, containerStyle } = styles
-
+const MapInput = (props) => {
   return (
-    <View style={containerStyle}>
+    <View>
       <TextInput
-        style={inputStyle}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
+        {...this.props}
+        value={props.value}
+        onChangeText={props.onChangeText}
+        placeholder={props.placeholder}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  inputStyle: {
-    height: 40,
+  input: {
+
     width: 300,
     color: '#000',
     paddingRight: 5,
     paddingLeft: 5,
     fontSize: 18,
-    lineHeight: 23,
-    borderColor: '#000',
-    borderWidth: 1
-
+    lineHeight: 23
   },
-  labelStyle: {
+  label: {
     fontSize: 18,
-    paddingLeft: 20,
+    paddingLeft: 20
   },
-  containerStyle: {
+  container: {
     height: 50,
-    // flexDirection: 'row',
-    // alignItems: 'center',
     paddingTop: 5,
     paddingLeft: 10,
     paddingRight: 10
