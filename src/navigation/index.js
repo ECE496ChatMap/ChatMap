@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { addNavigationHelpers, NavigationActions } from 'react-navigation';
+import { addNavigationHelpers } from 'react-navigation';
 import Navigation from './navigation';
 
 class appNavigation extends Component {

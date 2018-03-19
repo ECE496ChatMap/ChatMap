@@ -1,28 +1,23 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
-import Header from './profile/Header'
-import Bar from './profile/Bar'
+import Header from './profile/Header';
+import Bar from './profile/Bar';
 
 class ProfileScreen extends Component {
-
-  static navigationOptions = ({navigation}) => {
+  static navigationOptions = ({ navigation }) => {
     const { navigate } = navigation;
     return {
       title: 'Profile',
       headerRight: (
-        <Button
-          title="Setting"
-          onPress={()=>navigate('setting')}
-        />
+        <Button title="Setting" onPress={() => navigate('setting')} />
       )
     };
-  }
-
+  };
 
   render() {
     return (
-      <View style = {styles.container}>
+      <View style={styles.container}>
         <Header />
         <Bar />
       </View>
@@ -34,7 +29,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000'
-
   }
 });
 

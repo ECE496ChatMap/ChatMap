@@ -11,7 +11,7 @@ import {
   CHECKING_SESSION_FAIL,
   NAVIGATE_TO_REG
 } from './types';
-
+import { loadMessages, unloadMessages } from './chatActions';
 import firebase from 'firebase';
 
 export const navtoReg = () => {
@@ -39,7 +39,6 @@ export const loginUser = ({ loginemail, loginpassword }) => {
     firebase
       .auth()
       .signInWithEmailAndPassword(loginemail, loginpassword)
-      .then(user => loginUserSuccess(dispatch, user))
       .catch(error => loginUserFail(dispatch, error));
   };
 };
@@ -69,6 +68,7 @@ export const logoutUser = () => {
 };
 
 const loginUserSuccess = (dispatch, user) => {
+  dispatch(loadMessages());
   dispatch({
     type: LOGIN_USER_SUCCESS,
     payload: user
@@ -83,6 +83,7 @@ const loginUserFail = (dispatch, error) => {
 };
 
 const logoutUserSuccess = (dispatch, user) => {
+  dispatch(unloadMessages());
   dispatch({
     type: LOGOUT_USER_SUCCESS,
     payload: user

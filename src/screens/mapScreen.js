@@ -77,7 +77,7 @@ class MapScreen extends Component {
           });
         },
         error => {
-          console.log(error);
+          // console.log(error);
           switch (error.code) {
             case 1:
               Alert.alert('', 'Error get current position');
@@ -108,7 +108,7 @@ class MapScreen extends Component {
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal()
       .then(place => {
-        console.log(place);
+        // console.log(place);
         // place represents user's selection from the
         // suggestions and it is a simplified Google Place object.
         this.setState({
