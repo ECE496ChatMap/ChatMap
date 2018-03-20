@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 
-import Header from './profile/Header'
-import Bar from './profile/Bar'
+import Header from './Header'
+import Bar from './Bar'
 
 class ProfileScreen extends Component {
 
