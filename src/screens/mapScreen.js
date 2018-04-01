@@ -193,7 +193,7 @@ class MapScreen extends Component {
   }
 
   onTopicSubmit = () => {
-    const { topicContent, topicCategory, mapRegion } = this.state;
+    const { topicContent, topicCategory, topicDuration, mapRegion } = this.state;
 
     // validate the submit data
     if (topicContent === '') {
@@ -211,9 +211,7 @@ class MapScreen extends Component {
       return;
     }
 
-    // var d = new Date();
     var currentTime = Date.now();
-    var myDuration = 3600 * 1000; // 1 hr
 
     const { currentUser } = firebase.auth();
 
@@ -223,7 +221,7 @@ class MapScreen extends Component {
       content: topicContent,
       region: mapRegion,
       timestamp: currentTime,
-      duration: myDuration
+      duration: topicDuration
     };
 
     var newTopicKey = firebase.database().ref().child('topics').push().key;

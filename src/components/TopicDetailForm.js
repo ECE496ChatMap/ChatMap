@@ -58,6 +58,15 @@ const TopicDetailForm = ({ onClosePress, onEnterPress, topic, style }) => {
         >
           <Text style={styles.buttonText}>Enter Chat</Text>
         </TouchableOpacity>
+
+        <Text>      </Text>
+
+        <TouchableOpacity
+          style={styles.leaveButton}
+          onPress={onClosePress}
+        >
+          <Text style={styles.buttonText}>Leave</Text>
+        </TouchableOpacity>
       </CardSection>
 
     </CardSection>
@@ -126,6 +135,14 @@ const styles = {
     height: 40,
     width: 100,
     backgroundColor: '#8BC34A',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  leaveButton: {
+    height: 40,
+    width: 100,
+    backgroundColor: '#FF5722',
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center'
