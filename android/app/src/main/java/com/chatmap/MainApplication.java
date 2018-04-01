@@ -3,6 +3,7 @@ package com.chatmap;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.evollu.react.fcm.FIRMessagingPackage;
 import com.ninty.system.setting.SystemSettingPackage;
 import com.oblador.vectoricons.VectorIconsPackage;
@@ -26,7 +27,8 @@ public class MainApplication extends Application implements ReactApplication {
 
     @Override
     protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(new MainReactPackage(), new FIRMessagingPackage(), new SystemSettingPackage(),
+      return Arrays.<ReactPackage>asList(new MainReactPackage(),
+            new PickerPackage(), new FIRMessagingPackage(), new SystemSettingPackage(),
           new VectorIconsPackage(), new RNGooglePlacesPackage(), new MapsPackage());
     }
 
