@@ -3,7 +3,8 @@ import {
   View,
   Alert,
   Dimensions,
-  Text
+  Text,
+  Animated
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
@@ -48,6 +49,8 @@ const FORM_HEIGHT = (WINDOW_HEIGHT - 200) * 0.9;
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
 
+var isIssueFormHidden = true;
+
 class MapScreen extends Component {
   static navigationOptions = {
     title: 'Map',
@@ -71,7 +74,6 @@ class MapScreen extends Component {
         latitudeDelta: LATITUDE_DELTA,
         longitudeDelta: LONGITUDE_DELTA
       },
-      showForm: false,
       topicContent: '',
       topicCategory: 'Music',
       newTopic: {
@@ -80,7 +82,8 @@ class MapScreen extends Component {
         coordinates: null
       },
       showPin: false,
-      myMarkers: null
+      myMarkers: null,
+      bounceValue: new Animated.Value(-WINDOW_HEIGHT)
     };
   }
 
@@ -216,9 +219,10 @@ class MapScreen extends Component {
     firebase.database().ref().update(updates);
 
     this.setState({
-      showForm: false,
       showPin: false
     });
+
+    this.toggleIssueForm();
   };
 
   renderSearchPin() {
@@ -241,25 +245,6 @@ class MapScreen extends Component {
         </MapView.Marker>
       );
     }
-  }
-
-  renderIssueForm = () => {
-    if (this.state.showForm) {
-      return (
-        <View style={{marginTop: 30, marginLeft: 20, marginRight: 20, height: FORM_HEIGHT}}>
-          <IssueForm
-            style={styles.issueFormStyle}
-            onContentChange={text => this.setState({ topicContent: text })}
-            onPickerValueChange={(itemValue, itemIndex) => this.setState({ topicCategory: itemValue })}
-            pickerSelectedValue={this.state.topicCategory}
-            onSubmitPress={this.onTopicSubmit.bind(this)}
-            onClosePress={() => this.setState({ showForm: false })}
-          />
-        </View>
-      );
-    }
-
-    return null;
   }
 
   renderMarkers() {
@@ -289,6 +274,26 @@ class MapScreen extends Component {
     }
   }
 
+  toggleIssueForm() {
+    var toValue = -WINDOW_HEIGHT;
+
+    if (isIssueFormHidden) {
+      toValue = -(WINDOW_HEIGHT - FORM_HEIGHT - 250);
+    }
+
+    Animated.spring(
+      this.state.bounceValue,
+      {
+        toValue: toValue,
+        velocity: 3,
+        tension: 2,
+        friction: 8
+      }
+    ).start();
+
+    isIssueFormHidden = !isIssueFormHidden;
+  }
+
   animateToCurrentLocation = async () => {
     this.setState({showPin: false});
     this._map.animateToRegion({
@@ -310,7 +315,7 @@ class MapScreen extends Component {
           style={styles.MapStyle}
           region={this.state.mapRegion}
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
-          onPress={() => this.setState({ showForm: false })}
+          onPress={() => {}}
         >
           {this.renderMarkers()}
 
@@ -323,10 +328,21 @@ class MapScreen extends Component {
           </SearchButton>
         </View>
 
-        {this.renderIssueForm()}
+        <Animated.View
+          style={[styles.issueFormContainer,
+            {transform: [{translateY: this.state.bounceValue}]}]}>
+          <IssueForm
+            style={styles.issueFormStyle}
+            onContentChange={text => this.setState({ topicContent: text })}
+            onPickerValueChange={(itemValue, itemIndex) => this.setState({ topicCategory: itemValue })}
+            pickerSelectedValue={this.state.topicCategory}
+            onSubmitPress={this.onTopicSubmit.bind(this)}
+            onClosePress={() => this.toggleIssueForm()}
+          />
+        </Animated.View>
 
         <IssueButton
-          onPress={() => this.setState({ showForm: !this.state.showForm })}
+          onPress={() => this.toggleIssueForm()}
         />
 
         <View style={styles.myLocationButton}>
@@ -352,13 +368,13 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    zIndex: -1
+    zIndex: 0
   },
   searchView: {
     height: 50,
     position: 'absolute',
     backgroundColor: 'transparent',
-    zIndex: 100,
+    zIndex: 99,
     top: 20,
     left: 0,
     right: 0,
@@ -374,11 +390,18 @@ const styles = {
     alignSelf: 'center',
     alignItems: 'center'
   },
+  issueFormContainer: {
+    marginTop: 30,
+    marginLeft: 20,
+    marginRight: 20,
+    height: FORM_HEIGHT,
+    zIndex: 100
+  },
   myLocationButton: {
     height: 35,
     width: 35,
     position: 'absolute',
-    zIndex: 100,
+    zIndex: 99,
     bottom: 135,
     right: 40,
     alignItems: 'center',
