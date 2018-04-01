@@ -28,6 +28,13 @@ const options = {
 const Form = t.form.Form;
 
 class editProfileScreen extends Component {
+  constructor() {
+    super();
+    this.state = {
+      image: null,
+      images: null
+    };
+  }
   handleSubmit = () => {
     const value = this._form.getValue(); // use that ref to get the form value
 
