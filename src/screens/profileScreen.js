@@ -5,30 +5,24 @@ import Header from './Header'
 import Bar from './Bar'
 
 class ProfileScreen extends Component {
-
-  static navigationOptions = ({navigation}) => {
+  static navigationOptions = ({ navigation }) => {
     const { navigate } = navigation;
     return {
       title: 'Profile',
       headerRight: (
-        <Button
-          title="Setting"
-          onPress={()=>navigate('setting')}
-        />
+        <Button title="Setting" onPress={() => navigate('setting')} />
       )
     };
-  }
-
+  };
 
   render() {
     return (
-      <View style = {styles.container}>
+      <View style={styles.container}>
         <Header />
         <Button
-            title='edit'
-            onPress={()=>this.props.navigation.navigate('editProfile')}
-        >
-        </Button>
+          title="edit"
+          onPress={() => this.props.navigation.navigate('editProfile')}
+        />
         <Bar />
       </View>
     );
@@ -39,7 +33,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000'
-
   }
 });
 

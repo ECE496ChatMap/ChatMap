@@ -320,20 +320,25 @@ class MapScreen extends Component {
   }
 
   animateToCurrentLocation = async () => {
-    this.setState({showPin: false});
-    this._map.animateToRegion({
-      latitude: this.state.userRegion.latitude,
-      longitude: this.state.userRegion.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA
-    }, 2000);
-  }
+    this.setState({ showPin: false });
+    this._map.animateToRegion(
+      {
+        latitude: this.state.userRegion.latitude,
+        longitude: this.state.userRegion.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA
+      },
+      2000
+    );
+  };
 
   render() {
     return (
       <View style={styles.container}>
         <MapView
-          ref={component => {this._map = component;}}
+          ref={component => {
+            this._map = component;
+          }}
           showsUserLocation
           followsUserLocation
           showsMyLocationButton={false}
@@ -373,9 +378,7 @@ class MapScreen extends Component {
         />
 
         <View style={styles.myLocationButton}>
-          <MyLocationButton
-            onPress={() => this.animateToCurrentLocation()}
-          />
+          <MyLocationButton onPress={() => this.animateToCurrentLocation()} />
         </View>
       </View>
     );
@@ -406,7 +409,7 @@ const styles = {
     left: 0,
     right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   issueButtonStyle: {
     height: WINDOW_HEIGHT,

@@ -16,10 +16,6 @@ class AuthScreen extends Component {
     title: 'Authentication'
   };
 
-  componentWillMount() {
-    this.props.checksession();
-  }
-
   renderError() {
     if (this.props.loginerror) {
       return (
