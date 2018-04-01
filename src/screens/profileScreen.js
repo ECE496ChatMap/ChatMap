@@ -20,10 +20,9 @@ class ProfileScreen extends Component {
       <View style={styles.container}>
         <Header />
         <Button
-            title='edit'
-            onPress={()=>this.props.navigation.navigate('editProfile')}
-        >
-        </Button>
+          title="edit"
+          onPress={() => this.props.navigation.navigate('editProfile')}
+        />
         <Bar />
       </View>
     );
