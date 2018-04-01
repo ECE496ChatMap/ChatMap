@@ -193,6 +193,23 @@ class MapScreen extends Component {
 
   onTopicSubmit = () => {
     const { topicContent, topicCategory, mapRegion } = this.state;
+
+    // validate the submit data
+    if (topicContent === '') {
+      Alert.alert(
+        'Fail to Submit',
+        'Post content cannot be empty'
+      );
+      return;
+    }
+    if (topicCategory === '' || topicCategory === 'Choose your topic') {
+      Alert.alert(
+        'Fail to Submit',
+        'A category of the post must be selected'
+      );
+      return;
+    }
+
     // var d = new Date();
     var currentTime = Date.now();
     var myDuration = 3600 * 1000; // 1 hr
