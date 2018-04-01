@@ -44,7 +44,7 @@ const INITIAL_LONGITUDE = -79.3955;
 const LATITUDE_DELTA = 0.005;
 const LONGITUDE_DELTA = 0.005;
 
-const FORM_HEIGHT = (WINDOW_HEIGHT - 200) * 0.9;
+const FORM_HEIGHT = (WINDOW_HEIGHT - 150) * 0.9;
 
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
@@ -75,7 +75,8 @@ class MapScreen extends Component {
         longitudeDelta: LONGITUDE_DELTA
       },
       topicContent: '',
-      topicCategory: 'Music',
+      topicCategory: '',
+      topicDuration: '',
       newTopic: {
         category: null,
         content: null,
@@ -239,7 +240,7 @@ class MapScreen extends Component {
       showPin: false
     });
 
-    this.toggleIssueForm();
+    this.toggleIssueForm(false);
   };
 
   renderSearchPin() {
@@ -257,7 +258,7 @@ class MapScreen extends Component {
         >
           <CustomMarker
             topic={'Pin'}
-            backgroundColor={TopicType['Pin']}
+            backgroundColor={'#FF5722'}
           />
         </MapView.Marker>
       );
@@ -291,11 +292,20 @@ class MapScreen extends Component {
     }
   }
 
-  toggleIssueForm() {
-    var toValue = -WINDOW_HEIGHT;
+  toggleIssueForm(isMap) {
+    this.setState({
+      topicContent: '',
+      topicCategory: '',
+      topicDuration: ''
+    });
 
+    if (isMap && isIssueFormHidden) {
+      return;
+    }
+
+    var toValue = -WINDOW_HEIGHT;
     if (isIssueFormHidden) {
-      toValue = -(WINDOW_HEIGHT - FORM_HEIGHT - 250);
+      toValue = -(WINDOW_HEIGHT - FORM_HEIGHT - 200);
     }
 
     Animated.spring(
@@ -332,10 +342,9 @@ class MapScreen extends Component {
           style={styles.MapStyle}
           region={this.state.mapRegion}
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
-          onPress={() => {}}
+          onPress={() => this.toggleIssueForm(true)}
         >
           {this.renderMarkers()}
-
           {this.renderSearchPin()}
         </MapView>
 
@@ -353,13 +362,16 @@ class MapScreen extends Component {
             onContentChange={text => this.setState({ topicContent: text })}
             onPickerValueChange={(itemValue, itemIndex) => this.setState({ topicCategory: itemValue })}
             pickerSelectedValue={this.state.topicCategory}
+            onSlidingComplete={val => this.setState({ topicDuration: val })}
             onSubmitPress={this.onTopicSubmit.bind(this)}
-            onClosePress={() => this.toggleIssueForm()}
+            onClosePress={() => this.toggleIssueForm(false)}
+            userImage={'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'}
+            userName={'Amanda'}
           />
         </Animated.View>
 
         <IssueButton
-          onPress={() => this.toggleIssueForm()}
+          onPress={() => this.toggleIssueForm(false)}
         />
 
         <View style={styles.myLocationButton}>
