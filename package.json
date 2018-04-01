@@ -10,7 +10,7 @@
     "babel-eslint": "^8.2.1",
     "eslint": "^4.15.0",
     "eslint-plugin-react": "^7.6.1",
-    "firebase": "^4.8.2",
+    "firebase": "^4.12.1",
     "react": "16.2.0",
     "react-native": "0.52.0",
     "react-native-action-button": "^2.8.4",

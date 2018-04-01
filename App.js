@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import store from './store';
 import AppNavigation from './src/navigation';
-import firebase from 'firebase';
+import * as firebase from 'firebase';
+import 'firebase/functions';
 
 export default class App extends Component {
   componentWillMount() {

@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
-import firebase from 'firebase';
+import * as firebase from 'firebase';
+import 'firebase/functions';
 
 import {
   SearchButton,
@@ -18,20 +19,6 @@ import {
   MyLocationButton
 } from '../components';
 import TopicType from '../assets/categories/TopicType.json';
-
-//////// suppress the continous displaying of 'setting a timer' warning //////
-import { YellowBox } from 'react-native';
-import _ from 'lodash';
-
-
-YellowBox.ignoreWarnings(['Setting a timer']);
-const _console = _.clone(console);
-console.warn = message => {
-  if (message.indexOf('Setting a timer') <= -1) {
-    _console.warn(message);
-  }
-};
-////////////////////////////////////////////////////////////////////////////
 
 const screen = Dimensions.get('window');
 const WINDOW_HEIGHT = screen.height;
@@ -131,8 +118,8 @@ class MapScreen extends Component {
       }
     );
 
-    // listen to markers data, update map markers whenever database/topics get update
-    var topicsRef = firebase.database().ref('topics');
+    // listen to markers data, update map markers whenever database/posts get update
+    var topicsRef = firebase.database().ref('posts');
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
       var curMarkers = [];
@@ -153,13 +140,21 @@ class MapScreen extends Component {
 
       this.setState({myMarkers: curMarkers});
     }.bind(this));
+
+    // console.log('test call readPosts');
+    // var readPosts = firebase.functions().httpsCallable('readPosts');
+    // readPosts({range: 10, mapRegion: this.state.mapRegion}).then(function(result) {
+    //   console.log('check result from cloud function');
+    //   console.log(result);
+    //   console.log('end of check result');
+    // });
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
 
     // detach listener
-    firebase.database().ref('topics').off();
+    firebase.database().ref('posts').off();
   }
 
   onRegionChangeComplete(region) {
@@ -224,11 +219,11 @@ class MapScreen extends Component {
       duration: topicDuration
     };
 
-    var newTopicKey = firebase.database().ref().child('topics').push().key;
+    var newTopicKey = firebase.database().ref().child('posts').push().key;
 
     var updates = {};
-    updates['/users/' + currentUser.uid + '/topics/' + newTopicKey] = true;
-    updates['/topics/' + newTopicKey] = topicData;
+    updates['/users/' + currentUser.uid + '/posts/' + newTopicKey] = true;
+    updates['/posts/' + newTopicKey] = topicData;
     updates['/categories/' + topicCategory + '/' + newTopicKey] = true;
     updates['/chatrooms/' + newTopicKey + '/issuer'] = currentUser.uid;
 
