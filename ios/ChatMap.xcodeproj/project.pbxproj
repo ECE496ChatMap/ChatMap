@@ -50,6 +50,9 @@
 		7F9468E7A77447C9AB75FFD7 /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 69DB189E62184D4C864D3BC7 /* SimpleLineIcons.ttf */; };
 		75318773D66E46CF8B82ED89 /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 06E43CDCE77A40D0ADCA38E5 /* Zocial.ttf */; };
 		A1C4B9E5FBAF4D50AEB89625 /* libRNFIRMessaging.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 646989AE7222432CAC6F470E /* libRNFIRMessaging.a */; };
+		114305B780A745FDA460CB41 /* libAirMaps.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD7A3FEE61174C8181C82197 /* libAirMaps.a */; };
+		73BF02CF97154845B30E3D36 /* libRCTRestart.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FC3C02D2C434916B972C86A /* libRCTRestart.a */; };
+		31E630A098654526B4FD492B /* libRCTSystemSetting.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 471B1FFC0EFA46ED84ABEBAF /* libRCTSystemSetting.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -316,6 +319,12 @@
 		06E43CDCE77A40D0ADCA38E5 /* Zocial.ttf */ = {isa = PBXFileReference; name = "Zocial.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		1FB79E5B22BE4A2DA405BA19 /* RNFIRMessaging.xcodeproj */ = {isa = PBXFileReference; name = "RNFIRMessaging.xcodeproj"; path = "../node_modules/react-native-fcm/ios/RNFIRMessaging.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
 		646989AE7222432CAC6F470E /* libRNFIRMessaging.a */ = {isa = PBXFileReference; name = "libRNFIRMessaging.a"; path = "libRNFIRMessaging.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		3483397571164613AF596E9A /* AirMaps.xcodeproj */ = {isa = PBXFileReference; name = "AirMaps.xcodeproj"; path = "../node_modules/react-native-maps/lib/ios/AirMaps.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		FD7A3FEE61174C8181C82197 /* libAirMaps.a */ = {isa = PBXFileReference; name = "libAirMaps.a"; path = "libAirMaps.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		9B0124F806F84692A6267DFC /* RCTRestart.xcodeproj */ = {isa = PBXFileReference; name = "RCTRestart.xcodeproj"; path = "../node_modules/react-native-restart/ios/RCTRestart.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		1FC3C02D2C434916B972C86A /* libRCTRestart.a */ = {isa = PBXFileReference; name = "libRCTRestart.a"; path = "libRCTRestart.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
+		DCA71881171345DE95ECC0BD /* RCTSystemSetting.xcodeproj */ = {isa = PBXFileReference; name = "RCTSystemSetting.xcodeproj"; path = "../node_modules/react-native-system-setting/ios/RCTSystemSetting.xcodeproj"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = wrapper.pb-project; explicitFileType = undefined; includeInIndex = 0; };
+		471B1FFC0EFA46ED84ABEBAF /* libRCTSystemSetting.a */ = {isa = PBXFileReference; name = "libRCTSystemSetting.a"; path = "libRCTSystemSetting.a"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = archive.ar; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -347,6 +356,9 @@
 				C0854658C22F4CFBB4DE7256 /* libRNGooglePlaces.a in Frameworks */,
 				34A03F3C625141A89AAEC183 /* libRNVectorIcons.a in Frameworks */,
 				A1C4B9E5FBAF4D50AEB89625 /* libRNFIRMessaging.a in Frameworks */,
+				114305B780A745FDA460CB41 /* libAirMaps.a in Frameworks */,
+				73BF02CF97154845B30E3D36 /* libRCTRestart.a in Frameworks */,
+				31E630A098654526B4FD492B /* libRCTSystemSetting.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,6 +539,9 @@
 				09E11F940F6E49458603E674 /* RNGooglePlaces.xcodeproj */,
 				0300783978704693AE31F203 /* RNVectorIcons.xcodeproj */,
 				1FB79E5B22BE4A2DA405BA19 /* RNFIRMessaging.xcodeproj */,
+				3483397571164613AF596E9A /* AirMaps.xcodeproj */,
+				9B0124F806F84692A6267DFC /* RCTRestart.xcodeproj */,
+				DCA71881171345DE95ECC0BD /* RCTSystemSetting.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -1137,6 +1152,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Debug;
@@ -1166,6 +1184,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Release;
@@ -1190,6 +1211,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Debug;
@@ -1213,6 +1237,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Release;
@@ -1251,6 +1278,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Debug;
@@ -1289,6 +1319,9 @@
 					"$(SRCROOT)/../node_modules/react-native-google-places/ios",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
 					"$(SRCROOT)/../node_modules/react-native-fcm/ios",
+					"$(SRCROOT)\..\node_modules\react-native-maps\lib\ios/**",
+					"$(SRCROOT)\..\node_modules\react-native-restart\ios\RCTRestart/**",
+					"$(SRCROOT)\..\node_modules\react-native-system-setting\ios",
 				);
 			};
 			name = Release;

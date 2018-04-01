@@ -7,8 +7,8 @@ import {
 } from 'react-native';
 import { DeckSection } from './DeckSection';
 
-const DeckDetail = ({ topic }) => {
-  const { content, type, userImage } = topic;
+const DeckDetail = ({ topic, onPress }) => {
+  const { content, category, userImage } = topic;
   const {
     thumbnailStyle,
     headerContentStyle,
@@ -28,7 +28,7 @@ const DeckDetail = ({ topic }) => {
         </TouchableOpacity>
       </View>
       <View style={{flexDirection: 'column', flex: 1}}>
-        <TouchableOpacity style={{flexDirection: 'column'}}>
+        <TouchableOpacity onPress={onPress} style={{flexDirection: 'column'}}>
           <DeckSection>
             <View style={styles.contentStyle}>
               <Text>Topic: {content}</Text>
@@ -36,7 +36,7 @@ const DeckDetail = ({ topic }) => {
           </DeckSection>
           <DeckSection>
             <View style={styles.contentStyle}>
-              <Text>Type: {type}</Text>
+              <Text>{category}</Text>
             </View>
           </DeckSection>
         </TouchableOpacity>
