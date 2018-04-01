@@ -42,7 +42,7 @@ const IssueForm = ({ onClosePress, onContentChange, onPickerValueChange, pickerS
         <View style={{flexDirection: 'row', borderWidth: 1, borderColor: '#ddd'}}>
           <TextInput
             style={{flex: 1, fontSize: 15}}
-            placeholder="Enter your topic"
+            placeholder="Enter your post"
             onChangeText={onContentChange}
             multiline={true}
             editable={true}

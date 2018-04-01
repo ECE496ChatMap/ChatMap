@@ -127,7 +127,7 @@ class MapScreen extends Component {
       }
     );
 
-    // listen to markers data
+    // listen to markers data, update map markers whenever database/topics get update
     var topicsRef = firebase.database().ref('topics');
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
@@ -158,8 +158,16 @@ class MapScreen extends Component {
     firebase.database().ref('topics').off();
   }
 
-  onRegionChange(region) {
+  onRegionChangeComplete(region) {
     this.setState({ mapRegion: region });
+
+    const { currentUser } = firebase.auth();
+    var updates = {};
+    updates['/users/' + currentUser.uid + '/focusedRegion'] = this.state.mapRegion;
+    firebase.database().ref().update(updates);
+
+    // also update map marker according to focused region
+    // TBD
   }
 
   openSearchModal() {
@@ -301,7 +309,7 @@ class MapScreen extends Component {
           showsMyLocationButton={false}
           style={styles.MapStyle}
           region={this.state.mapRegion}
-          onRegionChangeComplete={this.onRegionChange.bind(this)}
+          onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
           onPress={() => this.setState({ showForm: false })}
         >
           {this.renderMarkers()}
