@@ -154,14 +154,6 @@ class MapScreen extends Component {
       this.allPosts = postsFromDB;
       this.filterPosts('All');
     }.bind(this));
-
-    // console.log('test call readPosts');
-    // var readPosts = firebase.functions().httpsCallable('readPosts');
-    // readPosts({range: 10, mapRegion: this.state.mapRegion}).then(function(result) {
-    //   console.log('check result from cloud function');
-    //   console.log(result);
-    //   console.log('end of check result');
-    // });
   }
 
   // if user choose a specific category, then save those posts of the same
