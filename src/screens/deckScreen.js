@@ -36,7 +36,11 @@ class DeckScreen extends Component {
 
   renderRooms = () => {
     if (this.posts === null) {
-      return null;
+      return (
+        <View style={{alignContent: 'center'}}>
+          <Text style={{fontSize: 15}}>Nothing Found...</Text>
+        </View>
+      );
     }
     else {
       return this.posts.map(post =>
