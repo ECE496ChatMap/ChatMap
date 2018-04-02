@@ -36,7 +36,6 @@ const settingNavigator = StackNavigator({
 const mainNavigator = TabNavigator(
   {
     map: { screen: MapScreen },
-    deck: { screen: DeckScreen },
     list: { screen: ListScreen },
     profile: { screen: ProfileScreen }
   },
@@ -58,7 +57,8 @@ const welcomeNavigator = StackNavigator({
   notification: { screen: notificationSettingScreen },
   display: { screen: displayScreen},
   chat: { screen: ChatScreen },
-  editProfile: {screen: editProfileScreen }
+  editProfile: {screen: editProfileScreen },
+  deck: { screen: DeckScreen }
 });
 
 export default welcomeNavigator;
