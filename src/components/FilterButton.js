@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Image, TouchableOpacity } from 'react-native';
 
-const MyLocationButton = ({ onPress }) => {
+const FilterButton = ({ onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <Image
         style={styles.image}
-        source={require('../assets/images/myLocation.png')}
+        source={require('../assets/images/filter.png')}
       />
     </TouchableOpacity>
   );
@@ -23,4 +23,4 @@ const styles = {
   }
 };
 
-export { MyLocationButton };
+export { FilterButton };
