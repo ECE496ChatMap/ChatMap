@@ -9,13 +9,6 @@ import { DeckSection } from './DeckSection';
 
 const DeckDetail = ({ topic, onPress }) => {
   const { content, category, userImage } = topic;
-  const {
-    thumbnailStyle,
-    headerContentStyle,
-    thumbnailContainerStyle,
-    headerTextStyle,
-    imageStyle
-  } = styles;
 
   return (
     <View style={styles.container}>
