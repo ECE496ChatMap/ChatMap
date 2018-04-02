@@ -8,6 +8,7 @@ import {
 
 import navigator from '../navigation/navigation';
 import { NavigationActions } from 'react-navigation';
+
 const reset = NavigationActions.reset({
   index: 0,
   actions: [NavigationActions.navigate({ routeName: 'auth' })]
@@ -26,7 +27,7 @@ const navigationReducer = (state = initState, action) => {
     case LOGIN_USER_START:
       return state;
     case LOGIN_USER_SUCCESS:
-      return navigator.router.getStateForAction(actionToMain, stateAtAuth);
+      return navigator.router.getStateForAction(actionToMain, state);
     case LOGOUT_USER_START:
       return state;
     case LOGOUT_USER_SUCCESS:

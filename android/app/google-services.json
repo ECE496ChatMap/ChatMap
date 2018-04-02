@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "340017396713",
+    "firebase_url": "https://chat-map-f390a.firebaseio.com",
+    "project_id": "chat-map-f390a",
+    "storage_bucket": "chat-map-f390a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:340017396713:android:9484cc4b7304d8b4",
+        "android_client_info": {
+          "package_name": "com.chatmap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "340017396713-rog1gblst0mpp91bjfgs3l2ggqftbl9p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBV9Dbpi7XN0GLwcoK4o8Umz5M5vn2UulE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

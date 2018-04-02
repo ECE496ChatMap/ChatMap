@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Button } from 'react-native';
 
 class ListScreen extends Component {
-
-  static navigationOptions = {
-    title: 'Chat Room'
-  }
+  static navigationOptions = ({ navigation }) => {
+    const { navigate } = navigation;
+    return {
+      title: 'ChatRoom',
+      headerRight: <Button title="Chat" onPress={() => navigate('chat')} />
+    };
+  };
 
   render() {
     return (

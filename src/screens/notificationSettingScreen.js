@@ -1,15 +1,24 @@
 import React, { Component } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Slider } from 'react-native';
 import { connect } from 'react-redux';
 import SettingsList from 'react-native-settings-list';
 import { logoutUser } from '../actions';
+import SystemSetting from 'react-native-system-setting'
 
 class notificationSettingScreen extends Component {
   constructor(){
     super();
     this.onValueChange = this.onValueChange.bind(this);
-    this.state = {switchValue: false, loggedIn: false};
+    this.state = {volume: 0, switchValue: false, loggedIn: false};
   }
+  
+  changeVol(value){
+      SystemSetting.setVolume(value);
+      this.setState({
+          volume: value
+      });
+  }
+
   render() {
     return (
       <View style={{backgroundColor:'#f6f6f6',flex:1}}>
@@ -36,6 +45,8 @@ class notificationSettingScreen extends Component {
               itemWidth={70}
               titleStyle={{color:'black', fontSize: 16}}
               hasNavArrow={false}
+            />
+            <Slider
             />
             <SettingsList.Item
               icon={

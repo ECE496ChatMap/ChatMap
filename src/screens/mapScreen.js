@@ -4,7 +4,8 @@ import {
   Alert,
   Dimensions,
   Text,
-  Animated
+  Animated,
+  Picker
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
@@ -16,7 +17,9 @@ import {
   CustomMarker,
   IssueButton,
   IssueForm,
-  MyLocationButton
+  MyLocationButton,
+  FilterButton,
+  TopicFilter
 } from '../components';
 import TopicType from '../assets/categories/TopicType.json';
 
@@ -32,11 +35,13 @@ const LATITUDE_DELTA = 0.005;
 const LONGITUDE_DELTA = 0.005;
 
 const FORM_HEIGHT = (WINDOW_HEIGHT - 150) * 0.9;
+const FILTER_HEIGHT = 150;
 
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
 
 var isIssueFormHidden = true;
+var isFilterHidden = true;
 
 class MapScreen extends Component {
   static navigationOptions = {
@@ -48,6 +53,8 @@ class MapScreen extends Component {
 
   constructor() {
     super();
+    this.allPosts = null;
+    this.selectedCategory = 'All';
     this.state = {
       mapRegion: {
         latitude: INITIAL_LATITUDE,
@@ -70,8 +77,10 @@ class MapScreen extends Component {
         coordinates: null
       },
       showPin: false,
-      myMarkers: null,
-      bounceValue: new Animated.Value(-WINDOW_HEIGHT)
+      filteredPosts: null,
+      bounceValue: new Animated.Value(-WINDOW_HEIGHT),
+      filterBounceValue: new Animated.Value(FILTER_HEIGHT),
+      showFilter: false
     };
   }
 
@@ -118,27 +127,32 @@ class MapScreen extends Component {
       }
     );
 
-    // listen to markers data, update map markers whenever database/posts get update
+    // listen to markers data,
+    // update allPosts whenever a new post is created in database
     var topicsRef = firebase.database().ref('posts');
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
-      var curMarkers = [];
+      var postsFromDB = [];
       var topicId = 0;
       for (var topicKey in allTopics) {
         var curTopic = allTopics[topicKey];
         var myTopic = {
           id: topicId,
-          topic: curTopic.category,
+          category: curTopic.category,
+          content: curTopic.content,
+          timestamp: curTopic.timestamp,
+          duration: curTopic.durationInHr,
           coordinate: {
             latitude: curTopic.region.latitude,
             longitude: curTopic.region.longitude
           }
         };
-        curMarkers.push(myTopic);
+        postsFromDB.push(myTopic);
         topicId++;
       }
 
-      this.setState({myMarkers: curMarkers});
+      this.allPosts = postsFromDB;
+      this.filterPosts('All');
     }.bind(this));
 
     // console.log('test call readPosts');
@@ -148,6 +162,30 @@ class MapScreen extends Component {
     //   console.log(result);
     //   console.log('end of check result');
     // });
+  }
+
+  // if user choose a specific category, then save those posts of the same
+  // category to this.state.filteredPosts.
+  // We also save a reference to all posts to this.allPosts
+  filterPosts(filteredCategory) {
+    this.selectedCategory = filteredCategory;
+
+    if (filteredCategory !== 'All') {
+      var filteredPosts = [];
+      this.allPosts.forEach(elem => {
+        if (elem.category === filteredCategory) {
+          filteredPosts.push(elem);
+        }
+      });
+      this.setState({filteredPosts: filteredPosts});
+    }
+    else {
+      this.setState({filteredPosts: this.allPosts});
+    }
+
+    if (!isFilterHidden) {
+      this.toggleFilter(false);
+    }
   }
 
   componentWillUnmount() {
@@ -216,7 +254,7 @@ class MapScreen extends Component {
       content: topicContent,
       region: mapRegion,
       timestamp: currentTime,
-      duration: topicDuration
+      durationInHr: topicDuration
     };
 
     var newTopicKey = firebase.database().ref().child('posts').push().key;
@@ -259,24 +297,24 @@ class MapScreen extends Component {
   }
 
   renderMarkers() {
-    if (this.state.myMarkers === null) {
+    if (this.state.filteredPosts === null) {
       return null;
     }
     else {
       return (
-        this.state.myMarkers.map((marker, i) => {
-          var topic = marker.topic;
+        this.state.filteredPosts.map((post, i) => {
+          var cate = post.category;
           return (
             <MapView.Marker
-              key={marker.id}
-              coordinate={marker.coordinate}
+              key={post.id}
+              coordinate={post.coordinate}
               onPress={() => this.props.navigation.navigate('deck', {
-                markerId: marker.id
+                markerId: post.id
               })}
             >
               <CustomMarker
-                topic={topic}
-                backgroundColor={TopicType[topic]}
+                topic={cate}
+                backgroundColor={TopicType[cate]}
               />
             </MapView.Marker>
           );
@@ -285,14 +323,14 @@ class MapScreen extends Component {
     }
   }
 
-  toggleIssueForm(isMap) {
+  toggleIssueForm(isMapTapped) {
     this.setState({
       topicContent: '',
       topicCategory: '',
       topicDuration: ''
     });
 
-    if (isMap && isIssueFormHidden) {
+    if (isMapTapped && isIssueFormHidden) {
       return;
     }
 
@@ -314,28 +352,61 @@ class MapScreen extends Component {
     isIssueFormHidden = !isIssueFormHidden;
   }
 
+  toggleFilter(isMapTapped) {
+    if (isMapTapped && isFilterHidden) {
+      return;
+    }
+
+    var toValue = FILTER_HEIGHT;
+    if (isFilterHidden) {
+      toValue = -125;
+    }
+
+    Animated.spring(
+      this.state.filterBounceValue,
+      {
+        toValue: toValue,
+        velocity: 3,
+        tension: 2,
+        friction: 8
+      }
+    ).start();
+
+    isFilterHidden = !isFilterHidden;
+  }
+
   animateToCurrentLocation = async () => {
-    this.setState({showPin: false});
-    this._map.animateToRegion({
-      latitude: this.state.userRegion.latitude,
-      longitude: this.state.userRegion.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA
-    }, 2000);
+    this.setState({ showPin: false });
+    this._map.animateToRegion(
+      {
+        latitude: this.state.userRegion.latitude,
+        longitude: this.state.userRegion.longitude,
+        latitudeDelta: LATITUDE_DELTA,
+        longitudeDelta: LONGITUDE_DELTA
+      },
+      2000
+    );
+  };
+
+  onMapPress() {
+    this.toggleIssueForm(true);
+    this.toggleFilter(true);
   }
 
   render() {
     return (
       <View style={styles.container}>
         <MapView
-          ref={component => {this._map = component;}}
+          ref={component => {
+            this._map = component;
+          }}
           showsUserLocation
           followsUserLocation
           showsMyLocationButton={false}
           style={styles.MapStyle}
           region={this.state.mapRegion}
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
-          onPress={() => this.toggleIssueForm(true)}
+          onPress={() => this.onMapPress()}
         >
           {this.renderMarkers()}
           {this.renderSearchPin()}
@@ -363,15 +434,28 @@ class MapScreen extends Component {
           />
         </Animated.View>
 
+        <Animated.View
+          style={[styles.filterContainer,
+            {transform: [{translateY: this.state.filterBounceValue}]}]}>
+          <TopicFilter
+            style={styles.issueFormStyle}
+            onPickerValueChange={(itemValue, itemIndex) => this.filterPosts(itemValue) }
+            pickerSelectedValue={this.selectedCategory}
+            onClosePress={() => this.toggleFilter(false)}
+          />
+        </Animated.View>
+
+        <View style={styles.myLocationButton}>
+          <MyLocationButton onPress={() => this.animateToCurrentLocation()} />
+        </View>
+
+        <View style={styles.filterButton}>
+          <FilterButton onPress={() => this.toggleFilter(false)} />
+        </View>
+
         <IssueButton
           onPress={() => this.toggleIssueForm(false)}
         />
-
-        <View style={styles.myLocationButton}>
-          <MyLocationButton
-            onPress={() => this.animateToCurrentLocation()}
-          />
-        </View>
       </View>
     );
   }
@@ -401,7 +485,7 @@ const styles = {
     left: 0,
     right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center'
   },
   issueButtonStyle: {
     height: WINDOW_HEIGHT,
@@ -419,7 +503,26 @@ const styles = {
     height: FORM_HEIGHT,
     zIndex: 100
   },
+  filterContainer: {
+    marginTop: 30,
+    marginLeft: 20,
+    marginRight: 20,
+    height: FILTER_HEIGHT,
+    zIndex: 100
+  },
   myLocationButton: {
+    height: 35,
+    width: 35,
+    position: 'absolute',
+    zIndex: 99,
+    bottom: 210,
+    right: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    padding: 10
+  },
+  filterButton: {
     height: 35,
     width: 35,
     position: 'absolute',
