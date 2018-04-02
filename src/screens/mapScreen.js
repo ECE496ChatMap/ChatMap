@@ -5,12 +5,11 @@ import {
   Dimensions,
   Text,
   Animated,
-  Picker
+  Slider
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import * as firebase from 'firebase';
-import 'firebase/functions';
 
 import {
   SearchButton,
@@ -82,7 +81,8 @@ class MapScreen extends Component {
       filteredPosts: null,
       bounceValue: new Animated.Value(-WINDOW_HEIGHT),
       filterBounceValue: new Animated.Value(FILTER_HEIGHT),
-      showFilter: false
+      showFilter: false,
+      displayRange: 1
     };
   }
 
@@ -154,14 +154,6 @@ class MapScreen extends Component {
       this.allPosts = postsFromDB;
       this.filterPosts('All');
     }.bind(this));
-
-    // console.log('test call readPosts');
-    // var readPosts = firebase.functions().httpsCallable('readPosts');
-    // readPosts({range: 10, mapRegion: this.state.mapRegion}).then(function(result) {
-    //   console.log('check result from cloud function');
-    //   console.log(result);
-    //   console.log('end of check result');
-    // });
   }
 
   // if user choose a specific category, then save those posts of the same
@@ -170,27 +162,33 @@ class MapScreen extends Component {
   filterPosts(filteredCategory) {
     this.selectedCategory = filteredCategory;
 
+    var filteredPosts = [];
     if (filteredCategory !== 'All') {
-      var filteredPosts = [];
       for (var key in this.allPosts) {
         var post = this.allPosts[key];
+
+        // first filter incoming posts by selected category
         if (post.category === filteredCategory) {
+          // then check if this post is within display range
+          var d = this.distanceInKmBetweenEarthCoordinates(this.state.mapRegion, post.coordinate);
+          if (d <= this.state.displayRange) {
+            filteredPosts.push(post);
+          }
+        }
+      }
+    }
+    else {
+      for (var key in this.allPosts) {
+        var post = this.allPosts[key];
+        var d = this.distanceInKmBetweenEarthCoordinates(this.state.mapRegion, post.coordinate);
+        console.log('my d: ' + d);
+        if (d <= this.state.displayRange) {
           filteredPosts.push(post);
         }
       }
-      this.setState({filteredPosts: filteredPosts});
-    }
-    else {
-      var parsedPosts = [];
-      for (var key in this.allPosts) {
-        var post = this.allPosts[key];
-        parsedPosts.push(post);
-      }
-      this.setState({filteredPosts: parsedPosts});
     }
 
-    console.log('-----');
-    console.log(this.state.filteredPosts);
+    this.setState({filteredPosts: filteredPosts});
 
     if (!isFilterHidden) {
       this.toggleFilter(false);
@@ -212,15 +210,39 @@ class MapScreen extends Component {
     updates['/users/' + currentUser.uid + '/focusedRegion'] = this.state.mapRegion;
     firebase.database().ref().update(updates);
 
-    if (this.state.userRegion !== this.state.mapRegion) {
+    var disInKm = this.distanceInKmBetweenEarthCoordinates(this.state.userRegion, this.state.mapRegion);
+    if (disInKm > 0.010) {
       this.setState({isRenderCenter: true});
     }
     else {
       this.setState({isRenderCenter: false});
     }
 
-    // also update map marker according to focused region
-    // TBD
+    this.filterPosts(this.selectedCategory);
+  }
+
+  distanceInKmBetweenEarthCoordinates(region1, region2) {
+    var lat1 = region1.latitude;
+    var lon1 = region1.longitude;
+    var lat2 = region2.latitude;
+    var lon2 = region2.longitude;
+
+    var earthRadiusKm = 6371;
+
+    var dLat = this.degreesToRadians(lat2 - lat1);
+    var dLon = this.degreesToRadians(lon2 - lon1);
+
+    lat1 = this.degreesToRadians(lat1);
+    lat2 = this.degreesToRadians(lat2);
+
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  }
+
+  degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
   }
 
   openSearchModal() {
@@ -496,6 +518,24 @@ class MapScreen extends Component {
           />
         </Animated.View>
 
+        <View style={styles.sliderSectionContainer}>
+          <View style={{width: 50}}>
+            <Text>{this.state.displayRange} Km</Text>
+          </View>
+
+          <View>
+            <Slider
+              style={{width: 230}}
+              step={1}
+              minimumValue={1}
+              maximumValue={10}
+              value={1}
+              onValueChange={val => this.setState({ displayRange: val })}
+              onSlidingComplete={() => this.filterPosts(this.selectedCategory)}
+            />
+          </View>
+        </View>
+
         <View style={styles.ToListButton}>
           <ToListButton onPress={() => this.props.navigation.navigate('postList', {posts: this.state.filteredPosts})} />
         </View>
@@ -600,6 +640,17 @@ const styles = {
     justifyContent: 'center',
     backgroundColor: 'transparent',
     padding: 10
+  },
+  sliderSectionContainer: {
+    flexDirection: 'row',
+    width: 280,
+    height: 30,
+    zIndex: 99,
+    position: 'absolute',
+    bottom: 35,
+    left: 30,
+    padding: 5,
+    backgroundColor: 'transparent'
   }
 };
 
