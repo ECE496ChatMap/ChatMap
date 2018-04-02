@@ -9,20 +9,11 @@ import {
 import { CardSection } from './CardSection';
 import TopicType from '../assets/categories/TopicType.json';
 
-const TopicDetailForm = ({ onClosePress, onEnterPress, topic, style }) => {
-  var topicDatetime = (new Date(topic.timestamp)).toLocaleString();
+const TopicDetailForm = ({ onClosePress, onEnterPress, post, style }) => {
+  var topicDatetime = (new Date(post.timestamp)).toLocaleString();
 
   return (
     <CardSection style={[styles.container, style]}>
-      <View style={styles.closeBox}>
-        <TouchableOpacity onPress={onClosePress}>
-          <Image
-            source={require('../assets/images/close.png')}
-            style={{width: 16, height: 16}}
-          />
-        </TouchableOpacity>
-      </View>
-
       <CardSection style={styles.header}>
         <Image
           source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'}}
@@ -41,13 +32,13 @@ const TopicDetailForm = ({ onClosePress, onEnterPress, topic, style }) => {
           <Text style={styles.topicText}>Says: </Text>
         </View>
         <View style={{flex: 1, marginTop: 10, alignSelf: 'stretch', flexDirection: 'row', borderWidth: 1, borderColor: '#ddd'}}>
-          <Text style={{fontSize: 20}}>{topic.content}</Text>
+          <Text style={{fontSize: 20}}>{post.content}</Text>
         </View>
       </CardSection>
 
       <CardSection style={styles.topicBox}>
         <View style={{flexDirection: 'row'}}>
-          <Text style={styles.categoryText}>Category: {topic.category}</Text>
+          <Text style={styles.categoryText}>Category: {post.category}</Text>
         </View>
       </CardSection>
 
