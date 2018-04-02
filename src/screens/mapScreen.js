@@ -134,7 +134,7 @@ class MapScreen extends Component {
     var topicsRef = firebase.database().ref('posts');
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
-      var postsFromDB = [];
+      var postsFromDB = {};
       for (var topicKey in allTopics) {
         var curTopic = allTopics[topicKey];
         var myTopic = {
@@ -148,7 +148,7 @@ class MapScreen extends Component {
             longitude: curTopic.region.longitude
           }
         };
-        postsFromDB.push(myTopic);
+        postsFromDB[topicKey] = myTopic;
       }
 
       this.allPosts = postsFromDB;
@@ -164,16 +164,25 @@ class MapScreen extends Component {
 
     if (filteredCategory !== 'All') {
       var filteredPosts = [];
-      this.allPosts.forEach(elem => {
-        if (elem.category === filteredCategory) {
-          filteredPosts.push(elem);
+      for (var key in this.allPosts) {
+        var post = this.allPosts[key];
+        if (post.category === filteredCategory) {
+          filteredPosts.push(post);
         }
-      });
+      }
       this.setState({filteredPosts: filteredPosts});
     }
     else {
-      this.setState({filteredPosts: this.allPosts});
+      var parsedPosts = [];
+      for (var key in this.allPosts) {
+        var post = this.allPosts[key];
+        parsedPosts.push(post);
+      }
+      this.setState({filteredPosts: parsedPosts});
     }
+
+    console.log('-----');
+    console.log(this.state.filteredPosts);
 
     if (!isFilterHidden) {
       this.toggleFilter(false);
@@ -341,8 +350,8 @@ class MapScreen extends Component {
             <MapView.Marker
               key={post.key}
               coordinate={post.coordinate}
-              onPress={() => this.props.navigation.navigate('deck', {
-                markerId: post.key
+              onPress={() => this.props.navigation.navigate('postDetail', {
+                post: this.allPosts[post.key]
               })}
             >
               <CustomMarker
@@ -480,7 +489,7 @@ class MapScreen extends Component {
         </Animated.View>
 
         <View style={styles.ToListButton}>
-          <ToListButton onPress={() => this.props.navigation.navigate('deck')} />
+          <ToListButton onPress={() => this.props.navigation.navigate('postList', {posts: this.state.filteredPosts})} />
         </View>
 
         <View style={styles.myLocationButton}>
