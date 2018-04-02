@@ -5,7 +5,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 const IssueButton = ({ onPress }) => {
   return (
-    <ActionButton buttonColor="#1abc9c" onPress={onPress} />
+    <ActionButton
+      buttonColor="#1abc9c"
+      onPress={onPress}
+      bgColor={'transparent'}
+    />
   );
 };
 
@@ -13,8 +17,8 @@ const styles = {
   actionButtonIcon: {
     fontSize: 20,
     height: 22,
-    color: 'white',
-  },
+    backgroundColor: 'transparent'
+  }
 };
 
 export { IssueButton };

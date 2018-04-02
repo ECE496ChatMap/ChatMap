@@ -19,7 +19,9 @@ import {
   IssueForm,
   MyLocationButton,
   FilterButton,
-  TopicFilter
+  TopicFilter,
+  ToListButton,
+  PinMarker
 } from '../components';
 import TopicType from '../assets/categories/TopicType.json';
 
@@ -133,11 +135,10 @@ class MapScreen extends Component {
     topicsRef.on('value', function(snapshot) {
       var allTopics = snapshot.val();
       var postsFromDB = [];
-      var topicId = 0;
       for (var topicKey in allTopics) {
         var curTopic = allTopics[topicKey];
         var myTopic = {
-          id: topicId,
+          key: topicKey,
           category: curTopic.category,
           content: curTopic.content,
           timestamp: curTopic.timestamp,
@@ -148,7 +149,6 @@ class MapScreen extends Component {
           }
         };
         postsFromDB.push(myTopic);
-        topicId++;
       }
 
       this.allPosts = postsFromDB;
@@ -195,6 +195,13 @@ class MapScreen extends Component {
     updates['/users/' + currentUser.uid + '/focusedRegion'] = this.state.mapRegion;
     firebase.database().ref().update(updates);
 
+    if (this.state.userRegion !== this.state.mapRegion) {
+      this.setState({isRenderCenter: true});
+    }
+    else {
+      this.setState({isRenderCenter: false});
+    }
+
     // also update map marker according to focused region
     // TBD
   }
@@ -211,7 +218,8 @@ class MapScreen extends Component {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA
           },
-          showPin: true
+          showPin: true,
+          isRenderCenter: false
         });
       })
       .catch(error => console.log(error.message)); // error is a Javascript Error object
@@ -260,7 +268,8 @@ class MapScreen extends Component {
     firebase.database().ref().update(updates);
 
     this.setState({
-      showPin: false
+      showPin: false,
+      isRenderCenter: false
     });
 
     this.toggleIssueForm(false);
@@ -279,13 +288,45 @@ class MapScreen extends Component {
           key={6}
           coordinate={coord}
         >
-          <CustomMarker
-            topic={'Pin'}
+          <PinMarker
             backgroundColor={'#FF5722'}
           />
         </MapView.Marker>
       );
     }
+    else {
+      return null;
+    }
+  }
+
+  renderCenter() {
+    if (this.state.isRenderCenter) {
+      return (
+        <MapView.Marker
+          draggable
+          coordinate={this.state.mapRegion}
+          onDragEnd={e => this.onPinMarkerDragEnd(e)}
+        >
+          <PinMarker
+            backgroundColor={'#FF5722'}
+          />
+        </MapView.Marker>
+      );
+    }
+    else {
+      return null;
+    }
+  }
+
+  onPinMarkerDragEnd(e) {
+    var coord = {
+      latitude: e.nativeEvent.coordinate.latitude,
+      longitude: e.nativeEvent.coordinate.longitude,
+      latitudeDelta: this.state.mapRegion.latitudeDelta,
+      longitudeDelta: this.state.mapRegion.longitudeDelta
+    };
+
+    this._map.animateToRegion(coord, 2000);
   }
 
   renderMarkers() {
@@ -298,10 +339,10 @@ class MapScreen extends Component {
           var cate = post.category;
           return (
             <MapView.Marker
-              key={post.id}
+              key={post.key}
               coordinate={post.coordinate}
               onPress={() => this.props.navigation.navigate('deck', {
-                markerId: post.id
+                markerId: post.key
               })}
             >
               <CustomMarker
@@ -367,14 +408,14 @@ class MapScreen extends Component {
     isFilterHidden = !isFilterHidden;
   }
 
-  animateToCurrentLocation = async () => {
+  animateToRegion = async (region) => {
     this.setState({ showPin: false });
     this._map.animateToRegion(
       {
-        latitude: this.state.userRegion.latitude,
-        longitude: this.state.userRegion.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA
+        latitude: region.latitude,
+        longitude: region.longitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta
       },
       2000
     );
@@ -400,6 +441,7 @@ class MapScreen extends Component {
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
           onPress={() => this.onMapPress()}
         >
+          {this.renderCenter()}
           {this.renderMarkers()}
           {this.renderSearchPin()}
         </MapView>
@@ -437,8 +479,12 @@ class MapScreen extends Component {
           />
         </Animated.View>
 
+        <View style={styles.ToListButton}>
+          <ToListButton onPress={() => this.props.navigation.navigate('deck')} />
+        </View>
+
         <View style={styles.myLocationButton}>
-          <MyLocationButton onPress={() => this.animateToCurrentLocation()} />
+          <MyLocationButton onPress={() => this.animateToRegion(this.state.userRegion)} />
         </View>
 
         <View style={styles.filterButton}>
@@ -501,6 +547,18 @@ const styles = {
     marginRight: 20,
     height: FILTER_HEIGHT,
     zIndex: 100
+  },
+  ToListButton: {
+    height: 33,
+    width: 33,
+    position: 'absolute',
+    zIndex: 99,
+    bottom: 285,
+    right: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    padding: 10
   },
   myLocationButton: {
     height: 35,
