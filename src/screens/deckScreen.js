@@ -46,8 +46,8 @@ class DeckScreen extends Component {
       return this.posts.map(post =>
         <DeckDetail
           key={post.key}
-          topic={post}
-          onPress={() => this.props.navigation.navigate('postDetail', {
+          post={post}
+          onPostPress={() => this.props.navigation.navigate('postDetail', {
             post: post
           })}
         />

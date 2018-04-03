@@ -56,6 +56,12 @@ class MapScreen extends Component {
     super();
     this.allPosts = null;
     this.selectedCategory = 'All';
+    this.pinCoord = null;
+    this.curUserProfile = {
+      name: 'Anonymous',
+      bio: 'You don\'t have a bio yet.',
+      pic: require('../assets/images/dummyProfile.png')
+    };
     this.state = {
       mapRegion: {
         latitude: INITIAL_LATITUDE,
@@ -129,6 +135,26 @@ class MapScreen extends Component {
       }
     );
 
+    // query current user's info
+    var userId = firebase.auth().currentUser.uid;
+    firebase.database().ref('/users/' + userId).once('value').then(function(snapshot) {
+      var curUser = snapshot.val();
+      console.log('check curUser');
+      console.log(curUser);
+      if (curUser.hasOwnProperty('profile')) {
+        if (curUser.profile.name !== null &&
+            curUser.profile.name !== '') {
+          this.curUserProfile.name = curUser.profile.name;
+        }
+        if (curUser.profile.bio !== null &&
+            curUser.profile.bio !== '') {
+          this.curUserProfile.bio = curUser.profile.bio;
+        }
+      }
+    });
+
+    console.log(this.curUserProfile);
+
     // listen to markers data,
     // update allPosts whenever a new post is created in database
     var topicsRef = firebase.database().ref('posts');
@@ -141,6 +167,7 @@ class MapScreen extends Component {
           key: topicKey,
           category: curTopic.category,
           content: curTopic.content,
+          issuer: curTopic.issuer,
           timestamp: curTopic.timestamp,
           duration: curTopic.durationInHr,
           coordinate: {
@@ -181,7 +208,6 @@ class MapScreen extends Component {
       for (var key in this.allPosts) {
         var post = this.allPosts[key];
         var d = this.distanceInKmBetweenEarthCoordinates(this.state.mapRegion, post.coordinate);
-        console.log('my d: ' + d);
         if (d <= this.state.displayRange) {
           filteredPosts.push(post);
         }
@@ -210,13 +236,13 @@ class MapScreen extends Component {
     updates['/users/' + currentUser.uid + '/focusedRegion'] = this.state.mapRegion;
     firebase.database().ref().update(updates);
 
-    var disInKm = this.distanceInKmBetweenEarthCoordinates(this.state.userRegion, this.state.mapRegion);
-    if (disInKm > 0.010) {
-      this.setState({isRenderCenter: true});
-    }
-    else {
-      this.setState({isRenderCenter: false});
-    }
+    // var disInKm = this.distanceInKmBetweenEarthCoordinates(this.state.userRegion, this.state.mapRegion);
+    // if (disInKm > 0.010) {
+    //   this.setState({showPin: true});
+    // }
+    // else {
+    //   this.setState({showPin: false});
+    // }
 
     this.filterPosts(this.selectedCategory);
   }
@@ -250,6 +276,12 @@ class MapScreen extends Component {
       .then(place => {
         // place represents user's selection from the
         // suggestions and it is a simplified Google Place object.
+        this.pinCoord = {
+          latitude: place.latitude,
+          longitude: place.longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA
+        };
         this.setState({
           mapRegion: {
             latitude: place.latitude,
@@ -257,8 +289,7 @@ class MapScreen extends Component {
             latitudeDelta: LATITUDE_DELTA,
             longitudeDelta: LONGITUDE_DELTA
           },
-          showPin: true,
-          isRenderCenter: false
+          showPin: true
         });
       })
       .catch(error => console.log(error.message)); // error is a Javascript Error object
@@ -307,43 +338,18 @@ class MapScreen extends Component {
     firebase.database().ref().update(updates);
 
     this.setState({
-      showPin: false,
-      isRenderCenter: false
+      showPin: false
     });
 
     this.toggleIssueForm(false);
   };
 
-  renderSearchPin() {
-    const coord = {
-      latitude: this.state.mapRegion.latitude,
-      longitude: this.state.mapRegion.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA
-    };
+  renderPin(region) {
     if (this.state.showPin) {
       return (
         <MapView.Marker
-          key={6}
-          coordinate={coord}
-        >
-          <PinMarker
-            backgroundColor={'#FF5722'}
-          />
-        </MapView.Marker>
-      );
-    }
-    else {
-      return null;
-    }
-  }
-
-  renderCenter() {
-    if (this.state.isRenderCenter) {
-      return (
-        <MapView.Marker
           draggable
-          coordinate={this.state.mapRegion}
+          coordinate={this.pinCoord}
           onDragEnd={e => this.onPinMarkerDragEnd(e)}
         >
           <PinMarker
@@ -461,8 +467,24 @@ class MapScreen extends Component {
   };
 
   onMapPress() {
+
     this.toggleIssueForm(true);
     this.toggleFilter(true);
+  }
+
+  onMapLongPress(e) {
+    console.log('---');
+    console.log(e);
+    var coord = e.nativeEvent.coordinate;
+    this.pinCoord = {
+      latitude: coord.latitude,
+      longitude: coord.longitude,
+      latitudeDelta: this.state.mapRegion.latitudeDelta,
+      longitudeDelta: this.state.mapRegion.longitudeDelta
+    };
+    this.setState({showPin: true});
+
+    this._map.animateToRegion(this.pinCoord, 2000);
   }
 
   render() {
@@ -479,10 +501,10 @@ class MapScreen extends Component {
           region={this.state.mapRegion}
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
           onPress={() => this.onMapPress()}
+          onLongPress={e => this.onMapLongPress(e)}
         >
-          {this.renderCenter()}
           {this.renderMarkers()}
-          {this.renderSearchPin()}
+          {this.renderPin()}
         </MapView>
 
         <View style={styles.searchView}>
@@ -502,8 +524,7 @@ class MapScreen extends Component {
             onSlidingComplete={val => this.setState({ topicDuration: val })}
             onSubmitPress={this.onTopicSubmit.bind(this)}
             onClosePress={() => this.toggleIssueForm(false)}
-            userImage={'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'}
-            userName={'Amanda'}
+            userProfile={this.curUserProfile}
           />
         </Animated.View>
 

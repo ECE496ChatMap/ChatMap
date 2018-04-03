@@ -33,14 +33,19 @@ class IssueForm extends Component {
       onPickerValueChange,
       pickerSelectedValue,
       style,
-      userImage,
-      userName
+      userProfile
     } = this.props;
 
     const {
       onClosePress,
       onSubmitPress
     } = this.props;
+
+    const {
+      name,
+      bio,
+      pic
+    } = userProfile;
 
     this.onClosePress = () => {
       this.clearText();
@@ -65,14 +70,20 @@ class IssueForm extends Component {
 
         <CardSection style={styles.header}>
           <Image
-            source={{uri: userImage}}
+            source={pic}
             style={{width: 60, height: 60}}
           />
+
           <View style={styles.nameBox}>
             <Text style={styles.nameText}>
-              {userName}
+              {name}
+            </Text>
+            <Text>
+              {bio}
             </Text>
           </View>
+
+
         </CardSection>
 
         <CardSection style={styles.topicBox}>
@@ -187,8 +198,9 @@ const styles = {
     backgroundColor: 'transparent'
   },
   nameBox: {
-    justifyContent: 'center',
-    padding: 15
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: 5
   },
   nameText: {
     fontSize: 20
