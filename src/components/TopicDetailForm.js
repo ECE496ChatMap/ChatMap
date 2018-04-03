@@ -7,23 +7,54 @@ import {
   TextInput
 } from 'react-native';
 import { CardSection } from './CardSection';
+import * as firebase from 'firebase';
 import TopicType from '../assets/categories/TopicType.json';
 
 const TopicDetailForm = ({ onClosePress, onEnterPress, post, style }) => {
-  var topicDatetime = (new Date(post.timestamp)).toLocaleString();
+  const {
+    content,
+    key,
+    issuer,
+    timestamp,
+    category
+  } = post;
+
+  // query issuer's info
+  var issuerUserProfile = {
+    name: 'Anonymous',
+    bio: 'This person doesn\'t have a bio yet.',
+    pic: require('../assets/images/dummyProfile.png')
+  };
+  firebase.database().ref('/users/' + issuer).once('value').then(function(snapshot) {
+    var issuerUser = snapshot.val();
+    console.log('check curUser');
+    console.log(issuerUser);
+    if (issuerUser.hasOwnProperty('profile')) {
+      if (issuerUser.profile.name !== null &&
+          issuerUser.profile.name !== '') {
+        issuerUserProfile.name = issuerUser.profile.name;
+      }
+      if (issuerUser.profile.bio !== null &&
+          issuerUser.profile.bio !== '') {
+        issuerUserProfile.bio = issuerUser.profile.bio;
+      }
+    }
+  });
+
+  var topicDatetime = (new Date(timestamp)).toLocaleString();
 
   return (
     <CardSection style={[styles.container, style]}>
       <CardSection style={styles.header}>
         <Image
-          source={{uri: 'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'}}
+          source={issuerUserProfile.pic}
           style={{width: 60, height: 60}}
         />
         <View style={styles.nameBox}>
           <Text style={styles.nameText}>
-            Amanda
+            {issuerUserProfile.name}
           </Text>
-          <Text>On: {topicDatetime}</Text>
+          <Text>Posted on: {topicDatetime}</Text>
         </View>
       </CardSection>
 
@@ -32,14 +63,13 @@ const TopicDetailForm = ({ onClosePress, onEnterPress, post, style }) => {
           <Text style={styles.topicText}>Says: </Text>
         </View>
         <View style={{flex: 1, marginTop: 10, alignSelf: 'stretch', flexDirection: 'row', borderWidth: 1, borderColor: '#ddd'}}>
-          <Text style={{fontSize: 20}}>{post.content}</Text>
+          <Text style={{fontSize: 20}}>{content}</Text>
         </View>
       </CardSection>
 
-      <CardSection style={styles.topicBox}>
-        <View style={{flexDirection: 'row'}}>
-          <Text style={styles.categoryText}>Category: {post.category}</Text>
-        </View>
+      <CardSection style={styles.categoryBox}>
+        <Text style={styles.categoryText}>Category: </Text>
+        <Text style={{color: TopicType[category], fontSize: 18, fontWeight: 'bold'}}>{category}</Text>
       </CardSection>
 
       <CardSection style={styles.buttonSection}>
@@ -95,7 +125,7 @@ const styles = {
   },
   nameBox: {
     justifyContent: 'center',
-    padding: 15
+    padding: 5
   },
   nameText: {
     fontSize: 20
@@ -108,6 +138,12 @@ const styles = {
     alignItems: 'center',
     borderColor: 'transparent'
   },
+  categoryBox: {
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    alignItems: 'flex-start',
+    borderColor: 'transparent'
+  },
   topicText: {
     flex: 1,
     fontSize: 20,
@@ -116,11 +152,8 @@ const styles = {
     paddingBottom: 1
   },
   categoryText: {
-    flex: 1,
     fontSize: 20,
-    fontWeight: 'bold',
-    paddingTop: 10,
-    paddingBottom: 1
+    fontWeight: 'bold'
   },
   button: {
     height: 40,
