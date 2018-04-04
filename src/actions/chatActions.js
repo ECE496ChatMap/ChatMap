@@ -26,10 +26,23 @@ export const loadChatHistory = userID => {
   };
 };
 
-export const loadChatRoom = (roomID, chatroomName) => {
+export const loadChatRoom = (roomID, chatroomName, time) => {
+  let updates = {};
+  updates[
+    'chathistory/' +
+      firebase.auth().currentUser.uid +
+      '/' +
+      roomID +
+      '/lastaccess'
+  ] = time;
+  firebase
+    .database()
+    .ref()
+    .update(updates);
   return {
     type: CHAT_ROOM_LOAD_SUCCESS,
-    key: roomID
+    key: roomID,
+    accessTime: time
   };
 };
 

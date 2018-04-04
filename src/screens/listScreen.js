@@ -28,15 +28,7 @@ class ListScreen extends Component {
   };
 
   renderRow(rowData, sectionID) {
-    // console.log(
-    //   moment(1522806922620).calendar(null, {
-    //     sameDay: 'LT',
-    //     nextDay: '[Tomorrow]',
-    //     nextWeek: 'dddd',
-    //     lastDay: '[Yesterday]',
-    //     sameElse: 'DD/MM/YYYY'
-    //   })
-    // );
+    console.log();
     return (
       <ListItem
         roundAvatar
@@ -64,31 +56,27 @@ class ListScreen extends Component {
                     'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg'
                 }}
               />
-              <View
-                style={{
-                  position: 'absolute',
-                  width: 15,
-                  height: 15,
-                  borderRadius: 7.5,
-                  right: -1,
-                  top: -1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: '#EF5350'
-                }}
-              />
+              {this.renderBadge(rowData.isupdated)}
             </View>
           </View>
         }
         onPress={() => {
-          this.props.loadChatRoom(rowData.key, rowData.title);
+          this.props.loadChatRoom(
+            rowData.key,
+            rowData.title,
+            moment().valueOf()
+          );
           this.props.navigation.navigate('chat', { roomTitle: rowData.title });
         }}
         underlayColor="#e6e6e6"
       />
     );
   }
-
+  renderBadge(isupdated) {
+    if (isupdated) {
+      return <View style={styles.badge} />;
+    }
+  }
   render() {
     return (
       <List containerStyle={{ marginTop: 0 }}>
@@ -110,6 +98,20 @@ const mapStateToProps = state => {
   return {
     dataSource: ds.cloneWithRows(state.chatlistReducer.list)
   };
+};
+
+const styles = {
+  badge: {
+    position: 'absolute',
+    width: 15,
+    height: 15,
+    borderRadius: 7.5,
+    right: -1,
+    top: -1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EF5350'
+  }
 };
 
 export default connect(mapStateToProps, { loadChatRoom })(ListScreen);
