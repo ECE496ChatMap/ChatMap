@@ -42,7 +42,7 @@ class editProfileScreen extends Component {
     if (value) {
       firebase
         .database()
-        .ref('profile/' + user)
+        .ref('users/' + user + '/profile')
         .set({
           name: value.name,
           bio: value.bio
@@ -53,6 +53,8 @@ class editProfileScreen extends Component {
   };
 
   pickSingle(cropit, circular = false) {
+    const user = this.props.user.uid;
+
     ImagePicker.openPicker({
       width: 300,
       height: 300,
@@ -66,6 +68,10 @@ class editProfileScreen extends Component {
     })
       .then(image => {
         console.log('received image', image);
+        const imageRef = firebase
+          .storage()
+          .ref(user)
+          .child('dp.jpg');
         this.setState({
           image: {
             uri: image.path,

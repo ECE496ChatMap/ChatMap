@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Image, TouchableOpacity } from 'react-native';
 
-const MyLocationButton = ({ onPress }) => {
+const ToListButton = ({ onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <Image
         style={styles.image}
-        source={require('../assets/images/myLocation.png')}
+        source={require('../assets/images/content.png')}
       />
     </TouchableOpacity>
   );
@@ -14,8 +14,8 @@ const MyLocationButton = ({ onPress }) => {
 
 const styles = {
   image: {
-    width: 35,
-    height: 35
+    width: 33,
+    height: 33
   },
   container: {
     backgroundColor: 'transparent',
@@ -23,4 +23,4 @@ const styles = {
   }
 };
 
-export { MyLocationButton };
+export { ToListButton };

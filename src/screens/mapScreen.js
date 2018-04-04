@@ -5,33 +5,25 @@ import {
   Dimensions,
   Text,
   Animated,
-  Keyboard
+  Keyboard,
+  Slider
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
-import firebase from 'firebase';
+import * as firebase from 'firebase';
 
 import {
   SearchButton,
   CustomMarker,
   IssueButton,
   IssueForm,
-  MyLocationButton
+  MyLocationButton,
+  FilterButton,
+  TopicFilter,
+  ToListButton,
+  PinMarker
 } from '../components';
 import TopicType from '../assets/categories/TopicType.json';
-
-//////// suppress the continous displaying of 'setting a timer' warning //////
-import { YellowBox } from 'react-native';
-import _ from 'lodash';
-
-YellowBox.ignoreWarnings(['Setting a timer']);
-const _console = _.clone(console);
-console.warn = message => {
-  if (message.indexOf('Setting a timer') <= -1) {
-    _console.warn(message);
-  }
-};
-////////////////////////////////////////////////////////////////////////////
 
 const screen = Dimensions.get('window');
 const WINDOW_HEIGHT = screen.height;
@@ -45,11 +37,13 @@ const LATITUDE_DELTA = 0.005;
 const LONGITUDE_DELTA = 0.005;
 
 const FORM_HEIGHT = (WINDOW_HEIGHT - 150) * 0.9;
+const FILTER_HEIGHT = 150;
 
 const MARKER_LATITUDE = 43.6466495;
 const MARKER_LONGITUDE = -79.3759458;
 
 var isIssueFormHidden = true;
+var isFilterHidden = true;
 
 class MapScreen extends Component {
   static navigationOptions = {
@@ -61,6 +55,14 @@ class MapScreen extends Component {
 
   constructor() {
     super();
+    this.allPosts = null;
+    this.selectedCategory = 'All';
+    this.pinCoord = null;
+    this.curUserProfile = {
+      name: 'Anonymous',
+      bio: 'You don\'t have a bio yet.',
+      pic: require('../assets/images/dummyProfile.png')
+    };
     this.state = {
       mapRegion: {
         latitude: INITIAL_LATITUDE,
@@ -83,8 +85,11 @@ class MapScreen extends Component {
         coordinates: null
       },
       showPin: false,
-      myMarkers: null,
-      bounceValue: new Animated.Value(-WINDOW_HEIGHT)
+      filteredPosts: null,
+      bounceValue: new Animated.Value(-WINDOW_HEIGHT),
+      filterBounceValue: new Animated.Value(FILTER_HEIGHT),
+      showFilter: false,
+      displayRange: 0.1
     };
   }
 
@@ -130,41 +135,97 @@ class MapScreen extends Component {
       });
     });
 
-    // listen to markers data, update map markers whenever database/topics get update
-    var topicsRef = firebase.database().ref('topics');
-    topicsRef.on(
-      'value',
-      function(snapshot) {
-        var allTopics = snapshot.val();
-        var curMarkers = [];
-        var topicId = 0;
-        for (var topicKey in allTopics) {
-          var curTopic = allTopics[topicKey];
-          var myTopic = {
-            id: topicId,
-            topic: curTopic.category,
-            coordinate: {
-              latitude: curTopic.region.latitude,
-              longitude: curTopic.region.longitude
-            }
-          };
-          curMarkers.push(myTopic);
-          topicId++;
+    // query current user's info
+    var userId = firebase.auth().currentUser.uid;
+    firebase.database().ref('/users/' + userId).once('value').then(function(snapshot) {
+      var curUser = snapshot.val();
+      console.log('check curUser');
+      console.log(curUser);
+      if (curUser.hasOwnProperty('profile')) {
+        if (curUser.profile.name !== null &&
+            curUser.profile.name !== '') {
+          this.curUserProfile.name = curUser.profile.name;
         }
+        if (curUser.profile.bio !== null &&
+            curUser.profile.bio !== '') {
+          this.curUserProfile.bio = curUser.profile.bio;
+        }
+      }
+    });
 
-        this.setState({ myMarkers: curMarkers });
-      }.bind(this)
-    );
+    console.log(this.curUserProfile);
+
+    // listen to markers data,
+    // update allPosts whenever a new post is created in database
+    var topicsRef = firebase.database().ref('posts');
+    topicsRef.on('value', function(snapshot) {
+      var allTopics = snapshot.val();
+      var postsFromDB = {};
+      for (var topicKey in allTopics) {
+        var curTopic = allTopics[topicKey];
+        var myTopic = {
+          key: topicKey,
+          category: curTopic.category,
+          content: curTopic.content,
+          issuer: curTopic.issuer,
+          timestamp: curTopic.timestamp,
+          duration: curTopic.durationInHr,
+          coordinate: {
+            latitude: curTopic.region.latitude,
+            longitude: curTopic.region.longitude
+          }
+        };
+        postsFromDB[topicKey] = myTopic;
+      }
+
+      this.allPosts = postsFromDB;
+      this.filterPosts('All');
+    }.bind(this));
+  }
+
+  // if user choose a specific category, then save those posts of the same
+  // category to this.state.filteredPosts.
+  // We also save a reference to all posts to this.allPosts
+  filterPosts(filteredCategory) {
+    this.selectedCategory = filteredCategory;
+
+    var filteredPosts = [];
+    if (filteredCategory !== 'All') {
+      for (var key in this.allPosts) {
+        var post = this.allPosts[key];
+
+        // first filter incoming posts by selected category
+        if (post.category === filteredCategory) {
+          // then check if this post is within display range
+          var d = this.distanceInKmBetweenEarthCoordinates(this.state.mapRegion, post.coordinate);
+          if (d <= this.state.displayRange) {
+            filteredPosts.push(post);
+          }
+        }
+      }
+    }
+    else {
+      for (var key in this.allPosts) {
+        var post = this.allPosts[key];
+        var d = this.distanceInKmBetweenEarthCoordinates(this.state.mapRegion, post.coordinate);
+        if (d <= this.state.displayRange) {
+          filteredPosts.push(post);
+        }
+      }
+    }
+
+    this.setState({filteredPosts: filteredPosts});
+
+    if (!isFilterHidden) {
+      this.toggleFilter(false);
+    }
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
 
     // detach listener
-    firebase
-      .database()
-      .ref('topics')
-      .off();
+    firebase.database().ref('posts').off();
   }
 
   onRegionChangeComplete(region) {
@@ -180,8 +241,39 @@ class MapScreen extends Component {
       .ref()
       .update(updates);
 
-    // also update map marker according to focused region
-    // TBD
+    // var disInKm = this.distanceInKmBetweenEarthCoordinates(this.state.userRegion, this.state.mapRegion);
+    // if (disInKm > 0.010) {
+    //   this.setState({showPin: true});
+    // }
+    // else {
+    //   this.setState({showPin: false});
+    // }
+
+    this.filterPosts(this.selectedCategory);
+  }
+
+  distanceInKmBetweenEarthCoordinates(region1, region2) {
+    var lat1 = region1.latitude;
+    var lon1 = region1.longitude;
+    var lat2 = region2.latitude;
+    var lon2 = region2.longitude;
+
+    var earthRadiusKm = 6371;
+
+    var dLat = this.degreesToRadians(lat2 - lat1);
+    var dLon = this.degreesToRadians(lon2 - lon1);
+
+    lat1 = this.degreesToRadians(lat1);
+    lat2 = this.degreesToRadians(lat2);
+
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+  }
+
+  degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
   }
 
   openSearchModal() {
@@ -189,6 +281,12 @@ class MapScreen extends Component {
       .then(place => {
         // place represents user's selection from the
         // suggestions and it is a simplified Google Place object.
+        this.pinCoord = {
+          latitude: place.latitude,
+          longitude: place.longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA
+        };
         this.setState({
           mapRegion: {
             latitude: place.latitude,
@@ -228,18 +326,14 @@ class MapScreen extends Component {
       content: topicContent,
       region: mapRegion,
       timestamp: firebase.database.ServerValue.TIMESTAMP,
-      duration: topicDuration
+      durationInHr: topicDuration
     };
 
-    var newTopicKey = firebase
-      .database()
-      .ref()
-      .child('topics')
-      .push().key;
+    var newTopicKey = firebase.database().ref().child('posts').push().key;
 
     var updates = {};
-    updates['/users/' + currentUser.uid + '/topics/' + newTopicKey] = true;
-    updates['/topics/' + newTopicKey] = topicData;
+    updates['/users/' + currentUser.uid + '/posts/' + newTopicKey] = true;
+    updates['/posts/' + newTopicKey] = topicData;
     updates['/categories/' + topicCategory + '/' + newTopicKey] = true;
     updates['/chathistory/' + currentUser.uid + '/' + newTopicKey] = {
       content: topicContent,
@@ -258,53 +352,83 @@ class MapScreen extends Component {
     this.toggleIssueForm(false);
   };
 
-  renderSearchPin() {
-    const coord = {
-      latitude: this.state.mapRegion.latitude,
-      longitude: this.state.mapRegion.longitude,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA
-    };
+  renderPin(region) {
     if (this.state.showPin) {
       return (
-        <MapView.Marker key={6} coordinate={coord}>
-          <CustomMarker topic={'Pin'} backgroundColor={'#FF5722'} />
+        <MapView.Marker
+          draggable
+          coordinate={this.pinCoord}
+          onDragEnd={e => this.onPinMarkerDragEnd(e)}
+        >
+          <PinMarker
+            backgroundColor={'#FF5722'}
+          />
         </MapView.Marker>
+      );
+    }
+    else {
+      return null;
+    }
+  }
+
+  onPinMarkerDragEnd(e) {
+    var coord = {
+      latitude: e.nativeEvent.coordinate.latitude,
+      longitude: e.nativeEvent.coordinate.longitude,
+      latitudeDelta: this.state.mapRegion.latitudeDelta,
+      longitudeDelta: this.state.mapRegion.longitudeDelta
+    };
+
+    this._map.animateToRegion(coord, 2000);
+  }
+
+  renderMarkers() {
+    if (this.state.filteredPosts === null) {
+      return null;
+    }
+    else {
+      return (
+        this.state.filteredPosts.map((post, i) => {
+          var cate = post.category;
+          return (
+            <MapView.Marker
+              key={post.key}
+              coordinate={post.coordinate}
+              onPress={() => this.props.navigation.navigate('postDetail', {
+                post: this.allPosts[post.key]
+              })}
+            >
+              <CustomMarker
+                topic={cate}
+                backgroundColor={TopicType[cate]}
+              />
+            </MapView.Marker>
+          );
+        })
       );
     }
   }
 
-  renderMarkers() {
-    if (this.state.myMarkers === null) {
-      return null;
-    } else {
-      return this.state.myMarkers.map((marker, i) => {
-        var topic = marker.topic;
-        return (
-          <MapView.Marker
-            key={marker.id}
-            coordinate={marker.coordinate}
-            onPress={() =>
-              this.props.navigation.navigate('deck', {
-                markerId: marker.id
-              })
-            }
-          >
-            <CustomMarker topic={topic} backgroundColor={TopicType[topic]} />
-          </MapView.Marker>
-        );
-      });
-    }
+  renderCircle() {
+    var radius = this.state.displayRange * 1000;
+    return (
+      <MapView.Circle
+        center={this.state.mapRegion}
+        radius={radius}
+        strokeColor={'rgba(100,181,246,0.5)'}
+        fillColor={'rgba(100,181,246,0.15)'}
+      />
+    );
   }
 
-  toggleIssueForm(isMap) {
+  toggleIssueForm(isMapTapped) {
     this.setState({
       topicContent: '',
       topicCategory: '',
       topicDuration: ''
     });
 
-    if (isMap && isIssueFormHidden) {
+    if (isMapTapped && isIssueFormHidden) {
       return;
     }
 
@@ -323,18 +447,62 @@ class MapScreen extends Component {
     isIssueFormHidden = !isIssueFormHidden;
   }
 
-  animateToCurrentLocation = async () => {
+  toggleFilter(isMapTapped) {
+    if (isMapTapped && isFilterHidden) {
+      return;
+    }
+
+    var toValue = FILTER_HEIGHT;
+    if (isFilterHidden) {
+      toValue = -125;
+    }
+
+    Animated.spring(
+      this.state.filterBounceValue,
+      {
+        toValue: toValue,
+        velocity: 3,
+        tension: 2,
+        friction: 8
+      }
+    ).start();
+
+    isFilterHidden = !isFilterHidden;
+  }
+
+  animateToRegion = async (region) => {
     this.setState({ showPin: false });
     this._map.animateToRegion(
       {
-        latitude: this.state.userRegion.latitude,
-        longitude: this.state.userRegion.longitude,
-        latitudeDelta: LATITUDE_DELTA,
-        longitudeDelta: LONGITUDE_DELTA
+        latitude: region.latitude,
+        longitude: region.longitude,
+        latitudeDelta: region.latitudeDelta,
+        longitudeDelta: region.longitudeDelta
       },
       2000
     );
   };
+
+  onMapPress() {
+
+    this.toggleIssueForm(true);
+    this.toggleFilter(true);
+  }
+
+  onMapLongPress(e) {
+    console.log('---');
+    console.log(e);
+    var coord = e.nativeEvent.coordinate;
+    this.pinCoord = {
+      latitude: coord.latitude,
+      longitude: coord.longitude,
+      latitudeDelta: this.state.mapRegion.latitudeDelta,
+      longitudeDelta: this.state.mapRegion.longitudeDelta
+    };
+    this.setState({showPin: true});
+
+    this._map.animateToRegion(this.pinCoord, 2000);
+  }
 
   render() {
     return (
@@ -349,10 +517,12 @@ class MapScreen extends Component {
           style={styles.MapStyle}
           region={this.state.mapRegion}
           onRegionChangeComplete={this.onRegionChangeComplete.bind(this)}
-          onPress={() => this.toggleIssueForm(true)}
+          onPress={() => this.onMapPress()}
+          onLongPress={e => this.onMapLongPress(e)}
         >
           {this.renderMarkers()}
-          {this.renderSearchPin()}
+          {this.renderPin()}
+          {this.renderCircle()}
         </MapView>
 
         <View style={styles.searchView}>
@@ -377,18 +547,54 @@ class MapScreen extends Component {
             onSlidingComplete={val => this.setState({ topicDuration: val })}
             onSubmitPress={this.onTopicSubmit.bind(this)}
             onClosePress={() => this.toggleIssueForm(false)}
-            userImage={
-              'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'
-            }
-            userName={'Amanda'}
+            userProfile={this.curUserProfile}
           />
         </Animated.View>
 
-        <IssueButton onPress={() => this.toggleIssueForm(false)} />
+        <Animated.View
+          style={[styles.filterContainer,
+            {transform: [{translateY: this.state.filterBounceValue}]}]}>
+          <TopicFilter
+            style={styles.issueFormStyle}
+            onPickerValueChange={(itemValue, itemIndex) => this.filterPosts(itemValue) }
+            pickerSelectedValue={this.selectedCategory}
+            onClosePress={() => this.toggleFilter(false)}
+          />
+        </Animated.View>
+
+        <View style={styles.sliderSectionContainer}>
+          <View style={{width: 50}}>
+            <Text>{parseFloat(this.state.displayRange).toFixed(1)} Km</Text>
+          </View>
+
+          <View>
+            <Slider
+              style={{width: 230}}
+              step={0.1}
+              minimumValue={0.1}
+              maximumValue={5}
+              value={0.1}
+              onValueChange={val => this.setState({ displayRange: val })}
+              onSlidingComplete={() => this.filterPosts(this.selectedCategory)}
+            />
+          </View>
+        </View>
+
+        <View style={styles.ToListButton}>
+          <ToListButton onPress={() => this.props.navigation.navigate('postList', {posts: this.state.filteredPosts})} />
+        </View>
 
         <View style={styles.myLocationButton}>
-          <MyLocationButton onPress={() => this.animateToCurrentLocation()} />
+          <MyLocationButton onPress={() => this.animateToRegion(this.state.userRegion)} />
         </View>
+
+        <View style={styles.filterButton}>
+          <FilterButton onPress={() => this.toggleFilter(false)} />
+        </View>
+
+        <IssueButton
+          onPress={() => this.toggleIssueForm(false)}
+        />
       </View>
     );
   }
@@ -436,7 +642,38 @@ const styles = {
     height: FORM_HEIGHT,
     zIndex: 100
   },
+  filterContainer: {
+    marginTop: 30,
+    marginLeft: 20,
+    marginRight: 20,
+    height: FILTER_HEIGHT,
+    zIndex: 100
+  },
+  ToListButton: {
+    height: 33,
+    width: 33,
+    position: 'absolute',
+    zIndex: 99,
+    bottom: 285,
+    right: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    padding: 10
+  },
   myLocationButton: {
+    height: 35,
+    width: 35,
+    position: 'absolute',
+    zIndex: 99,
+    bottom: 210,
+    right: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    padding: 10
+  },
+  filterButton: {
     height: 35,
     width: 35,
     position: 'absolute',
@@ -447,6 +684,17 @@ const styles = {
     justifyContent: 'center',
     backgroundColor: 'transparent',
     padding: 10
+  },
+  sliderSectionContainer: {
+    flexDirection: 'row',
+    width: 280,
+    height: 30,
+    zIndex: 99,
+    position: 'absolute',
+    bottom: 35,
+    left: 30,
+    padding: 5,
+    backgroundColor: 'transparent'
   }
 };
 
