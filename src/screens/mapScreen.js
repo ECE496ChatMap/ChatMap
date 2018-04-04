@@ -88,7 +88,7 @@ class MapScreen extends Component {
       bounceValue: new Animated.Value(-WINDOW_HEIGHT),
       filterBounceValue: new Animated.Value(FILTER_HEIGHT),
       showFilter: false,
-      displayRange: 1
+      displayRange: 0.1
     };
   }
 
@@ -401,6 +401,18 @@ class MapScreen extends Component {
     }
   }
 
+  renderCircle() {
+    var radius = this.state.displayRange * 1000;
+    return (
+      <MapView.Circle
+        center={this.state.mapRegion}
+        radius={radius}
+        strokeColor={'rgba(100,181,246,0.5)'}
+        fillColor={'rgba(100,181,246,0.15)'}
+      />
+    );
+  }
+
   toggleIssueForm(isMapTapped) {
     this.setState({
       topicContent: '',
@@ -505,6 +517,7 @@ class MapScreen extends Component {
         >
           {this.renderMarkers()}
           {this.renderPin()}
+          {this.renderCircle()}
         </MapView>
 
         <View style={styles.searchView}>
@@ -541,16 +554,16 @@ class MapScreen extends Component {
 
         <View style={styles.sliderSectionContainer}>
           <View style={{width: 50}}>
-            <Text>{this.state.displayRange} Km</Text>
+            <Text>{parseFloat(this.state.displayRange).toFixed(1)} Km</Text>
           </View>
 
           <View>
             <Slider
               style={{width: 230}}
-              step={1}
-              minimumValue={1}
-              maximumValue={10}
-              value={1}
+              step={0.1}
+              minimumValue={0.1}
+              maximumValue={5}
+              value={0.1}
               onValueChange={val => this.setState({ displayRange: val })}
               onSlidingComplete={() => this.filterPosts(this.selectedCategory)}
             />
