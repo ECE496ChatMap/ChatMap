@@ -6,20 +6,42 @@ import {
   CHAT_MESSAGE_LOAD_SUCCESS,
   CHAT_MESSAGE_LOAD_ERROR,
   CHAT_MESSAGE_SEND_SUCCESS,
-  CHAT_MESSAGE_SEND_ERROR
+  CHAT_MESSAGE_SEND_ERROR,
+  CHAT_HISTORY_LOAD_SUCCESS,
+  CHAT_ROOM_LOAD_SUCCESS
 } from './types';
 
 const msg_limit = 20;
 
-export const loadMessages = () => {
+export const loadChatHistory = userID => {
   return dispatch => {
     firebase
       .database()
-      .ref('Messages')
+      .ref('chathistory/' + userID)
+      .on(
+        'child_added',
+        snapshot => loadHistorySuccess(dispatch, snapshot.val(), snapshot.key),
+        errorObject => loadHistoryError(dispatch, errorObject.message)
+      );
+  };
+};
+
+export const loadChatRoom = (roomID, chatroomName) => {
+  return {
+    type: CHAT_ROOM_LOAD_SUCCESS,
+    key: roomID
+  };
+};
+
+export const loadMessages = roomID => {
+  return dispatch => {
+    firebase
+      .database()
+      .ref('chatrooms/' + roomID)
       .limitToLast(msg_limit)
       .on(
         'child_added',
-        snapshot => loadMsgSuccess(dispatch, snapshot.val()),
+        snapshot => loadMsgSuccess(dispatch, snapshot.val(), roomID),
         errorObject => loadMsgError(dispatch, errorObject.message)
       );
   };
@@ -31,7 +53,7 @@ export const unloadMessages = () => {
       .database()
       .ref('Messages')
       .off('child_added');
-    console.log('unloadfinished');
+    //console.log('unloadfinished');
   };
 };
 
@@ -42,13 +64,13 @@ export const updatemessage = text => {
   };
 };
 
-export const sendMessage = message => {
+export const sendMessage = (message, roomID) => {
   return dispatch => {
     //dispatch({ type: CHAT_MESSAGE_SENDING });
     //console.log(message);
     var msgref = firebase
       .database()
-      .ref('Messages')
+      .ref('chatrooms/' + roomID)
       .push();
     message[0]._id = msgref.key;
     message[0].createdAt = firebase.database.ServerValue.TIMESTAMP;
@@ -62,8 +84,21 @@ export const sendMessage = message => {
   };
 };
 
-const loadMsgSuccess = (dispatch, msgs) => {
-  // console.log(msgs);
+const loadHistorySuccess = (dispatch, histvalue, histkey) => {
+  dispatch({
+    type: CHAT_HISTORY_LOAD_SUCCESS,
+    payload: histvalue,
+    key: histkey
+  });
+  dispatch(loadMessages(histkey));
+};
+
+const loadHistoryError = (dispatch, err) => {
+  console.log(err);
+};
+
+const loadMsgSuccess = (dispatch, msgs, roomID) => {
+  //console.log(msgs);
   // convert hashmap to array
   // let messages = [];
   // for (let key in msgs) {
@@ -98,7 +133,8 @@ const loadMsgSuccess = (dispatch, msgs) => {
   // });
   dispatch({
     type: CHAT_MESSAGE_LOAD_SUCCESS,
-    payload: msgs
+    payload: msgs,
+    key: roomID
   });
 };
 

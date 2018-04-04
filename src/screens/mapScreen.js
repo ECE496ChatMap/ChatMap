@@ -4,7 +4,8 @@ import {
   Alert,
   Dimensions,
   Text,
-  Animated
+  Animated,
+  Keyboard
 } from 'react-native';
 import MapView from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
@@ -22,7 +23,6 @@ import TopicType from '../assets/categories/TopicType.json';
 //////// suppress the continous displaying of 'setting a timer' warning //////
 import { YellowBox } from 'react-native';
 import _ from 'lodash';
-
 
 YellowBox.ignoreWarnings(['Setting a timer']);
 const _console = _.clone(console);
@@ -89,6 +89,7 @@ class MapScreen extends Component {
   }
 
   componentDidMount() {
+    Keyboard.dismiss();
     navigator.geolocation.getCurrentPosition(
       position => {
         this.setState({
@@ -118,48 +119,52 @@ class MapScreen extends Component {
       }
     );
 
-    this.watchID = navigator.geolocation.watchPosition(
-      position => {
-        this.setState({
-          userRegion: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: LATITUDE_DELTA,
-            longitudeDelta: LONGITUDE_DELTA
-          }
-        });
-      }
-    );
+    this.watchID = navigator.geolocation.watchPosition(position => {
+      this.setState({
+        userRegion: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA
+        }
+      });
+    });
 
     // listen to markers data, update map markers whenever database/topics get update
     var topicsRef = firebase.database().ref('topics');
-    topicsRef.on('value', function(snapshot) {
-      var allTopics = snapshot.val();
-      var curMarkers = [];
-      var topicId = 0;
-      for (var topicKey in allTopics) {
-        var curTopic = allTopics[topicKey];
-        var myTopic = {
-          id: topicId,
-          topic: curTopic.category,
-          coordinate: {
-            latitude: curTopic.region.latitude,
-            longitude: curTopic.region.longitude
-          }
-        };
-        curMarkers.push(myTopic);
-        topicId++;
-      }
+    topicsRef.on(
+      'value',
+      function(snapshot) {
+        var allTopics = snapshot.val();
+        var curMarkers = [];
+        var topicId = 0;
+        for (var topicKey in allTopics) {
+          var curTopic = allTopics[topicKey];
+          var myTopic = {
+            id: topicId,
+            topic: curTopic.category,
+            coordinate: {
+              latitude: curTopic.region.latitude,
+              longitude: curTopic.region.longitude
+            }
+          };
+          curMarkers.push(myTopic);
+          topicId++;
+        }
 
-      this.setState({myMarkers: curMarkers});
-    }.bind(this));
+        this.setState({ myMarkers: curMarkers });
+      }.bind(this)
+    );
   }
 
   componentWillUnmount() {
     navigator.geolocation.clearWatch(this.watchID);
 
     // detach listener
-    firebase.database().ref('topics').off();
+    firebase
+      .database()
+      .ref('topics')
+      .off();
   }
 
   onRegionChangeComplete(region) {
@@ -167,8 +172,13 @@ class MapScreen extends Component {
 
     const { currentUser } = firebase.auth();
     var updates = {};
-    updates['/users/' + currentUser.uid + '/focusedRegion'] = this.state.mapRegion;
-    firebase.database().ref().update(updates);
+    updates[
+      '/users/' + currentUser.uid + '/focusedRegion'
+    ] = this.state.mapRegion;
+    firebase
+      .database()
+      .ref()
+      .update(updates);
 
     // also update map marker according to focused region
     // TBD
@@ -193,25 +203,22 @@ class MapScreen extends Component {
   }
 
   onTopicSubmit = () => {
-    const { topicContent, topicCategory, topicDuration, mapRegion } = this.state;
+    const {
+      topicContent,
+      topicCategory,
+      topicDuration,
+      mapRegion
+    } = this.state;
 
     // validate the submit data
     if (topicContent === '') {
-      Alert.alert(
-        'Fail to Submit',
-        'Post content cannot be empty'
-      );
+      Alert.alert('Fail to Submit', 'Post content cannot be empty');
       return;
     }
     if (topicCategory === '' || topicCategory === 'Choose your topic') {
-      Alert.alert(
-        'Fail to Submit',
-        'A category of the post must be selected'
-      );
+      Alert.alert('Fail to Submit', 'A category of the post must be selected');
       return;
     }
-
-    var currentTime = Date.now();
 
     const { currentUser } = firebase.auth();
 
@@ -220,19 +227,29 @@ class MapScreen extends Component {
       category: topicCategory,
       content: topicContent,
       region: mapRegion,
-      timestamp: currentTime,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
       duration: topicDuration
     };
 
-    var newTopicKey = firebase.database().ref().child('topics').push().key;
+    var newTopicKey = firebase
+      .database()
+      .ref()
+      .child('topics')
+      .push().key;
 
     var updates = {};
     updates['/users/' + currentUser.uid + '/topics/' + newTopicKey] = true;
     updates['/topics/' + newTopicKey] = topicData;
     updates['/categories/' + topicCategory + '/' + newTopicKey] = true;
-    updates['/chatrooms/' + newTopicKey + '/issuer'] = currentUser.uid;
+    updates['/chathistory/' + currentUser.uid + '/' + newTopicKey] = {
+      content: topicContent,
+      createAt: firebase.database.ServerValue.TIMESTAMP
+    };
 
-    firebase.database().ref().update(updates);
+    firebase
+      .database()
+      .ref()
+      .update(updates);
 
     this.setState({
       showPin: false
@@ -250,14 +267,8 @@ class MapScreen extends Component {
     };
     if (this.state.showPin) {
       return (
-        <MapView.Marker
-          key={6}
-          coordinate={coord}
-        >
-          <CustomMarker
-            topic={'Pin'}
-            backgroundColor={'#FF5722'}
-          />
+        <MapView.Marker key={6} coordinate={coord}>
+          <CustomMarker topic={'Pin'} backgroundColor={'#FF5722'} />
         </MapView.Marker>
       );
     }
@@ -266,27 +277,23 @@ class MapScreen extends Component {
   renderMarkers() {
     if (this.state.myMarkers === null) {
       return null;
-    }
-    else {
-      return (
-        this.state.myMarkers.map((marker, i) => {
-          var topic = marker.topic;
-          return (
-            <MapView.Marker
-              key={marker.id}
-              coordinate={marker.coordinate}
-              onPress={() => this.props.navigation.navigate('deck', {
+    } else {
+      return this.state.myMarkers.map((marker, i) => {
+        var topic = marker.topic;
+        return (
+          <MapView.Marker
+            key={marker.id}
+            coordinate={marker.coordinate}
+            onPress={() =>
+              this.props.navigation.navigate('deck', {
                 markerId: marker.id
-              })}
-            >
-              <CustomMarker
-                topic={topic}
-                backgroundColor={TopicType[topic]}
-              />
-            </MapView.Marker>
-          );
-        })
-      );
+              })
+            }
+          >
+            <CustomMarker topic={topic} backgroundColor={TopicType[topic]} />
+          </MapView.Marker>
+        );
+      });
     }
   }
 
@@ -306,15 +313,12 @@ class MapScreen extends Component {
       toValue = -(WINDOW_HEIGHT - FORM_HEIGHT - 200);
     }
 
-    Animated.spring(
-      this.state.bounceValue,
-      {
-        toValue: toValue,
-        velocity: 3,
-        tension: 2,
-        friction: 8
-      }
-    ).start();
+    Animated.spring(this.state.bounceValue, {
+      toValue: toValue,
+      velocity: 3,
+      tension: 2,
+      friction: 8
+    }).start();
 
     isIssueFormHidden = !isIssueFormHidden;
   }
@@ -358,24 +362,29 @@ class MapScreen extends Component {
         </View>
 
         <Animated.View
-          style={[styles.issueFormContainer,
-            {transform: [{translateY: this.state.bounceValue}]}]}>
+          style={[
+            styles.issueFormContainer,
+            { transform: [{ translateY: this.state.bounceValue }] }
+          ]}
+        >
           <IssueForm
             style={styles.issueFormStyle}
             onContentChange={text => this.setState({ topicContent: text })}
-            onPickerValueChange={(itemValue, itemIndex) => this.setState({ topicCategory: itemValue })}
+            onPickerValueChange={(itemValue, itemIndex) =>
+              this.setState({ topicCategory: itemValue })
+            }
             pickerSelectedValue={this.state.topicCategory}
             onSlidingComplete={val => this.setState({ topicDuration: val })}
             onSubmitPress={this.onTopicSubmit.bind(this)}
             onClosePress={() => this.toggleIssueForm(false)}
-            userImage={'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'}
+            userImage={
+              'https://upload.wikimedia.org/wikipedia/commons/8/88/%28Marie_Claire_Korea%29_%EC%A7%80%EA%B8%88%2C_%EC%9D%B4%EC%84%B1%EA%B2%BD.jpg'
+            }
             userName={'Amanda'}
           />
         </Animated.View>
 
-        <IssueButton
-          onPress={() => this.toggleIssueForm(false)}
-        />
+        <IssueButton onPress={() => this.toggleIssueForm(false)} />
 
         <View style={styles.myLocationButton}>
           <MyLocationButton onPress={() => this.animateToCurrentLocation()} />

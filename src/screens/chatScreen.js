@@ -18,8 +18,9 @@ console.warn = message => {
 
 class ChatScreen extends Component {
   static navigationOptions = ({ navigation }) => {
-    const { goBack } = navigation;
+    const { goBack, state } = navigation;
     return {
+      title: state.params.roomTitle,
       headerLeft: (
         <HeaderBackButton
           onPress={() => {
@@ -31,8 +32,8 @@ class ChatScreen extends Component {
     };
   };
 
-  onSend(messages = []) {
-    this.props.sendMessage(messages);
+  onSend(messages = [], roomID) {
+    this.props.sendMessage(messages, roomID);
   }
 
   render() {
@@ -44,7 +45,7 @@ class ChatScreen extends Component {
         }}
         //text={this.props.message}
         //onInputTextChanged={text => this.props.updatemessage(text)}
-        onSend={messages => this.onSend(messages)}
+        onSend={messages => this.onSend(messages, this.props.roomID)}
         keyboardShouldPersistTaps="never"
       />
     );
@@ -53,12 +54,13 @@ class ChatScreen extends Component {
 
 const mapStateToProps = state => {
   return {
-    sending: state.chatReducer.sending,
-    sendError: state.chatReducer.sendError,
-    messages: state.chatReducer.messages,
-    loaded_Messages: state.chatReducer.loaded_Messages,
-    loadError: state.chatReducer.loadError,
-    user: state.authReducer.user
+    sending: state.chatroomReducer.sending,
+    sendError: state.chatroomReducer.sendError,
+    messages: state.chatroomReducer.messages,
+    loaded_Messages: state.chatroomReducer.loaded_Messages,
+    loadError: state.chatroomReducer.loadError,
+    user: state.authReducer.user,
+    roomID: state.chatroomReducer.currentRoomID
   };
 };
 

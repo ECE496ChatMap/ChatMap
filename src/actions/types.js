@@ -20,3 +20,5 @@ export const CHAT_MESSAGE_LOAD_SUCCESS = 'chat_message_load_success';
 export const CHAT_MESSAGE_LOAD_ERROR = 'chat_message_load_error';
 export const CHAT_MESSAGE_SEND_SUCCESS = 'chat_message_send_success';
 export const CHAT_MESSAGE_SEND_ERROR = 'chat_message_send_error';
+export const CHAT_HISTORY_LOAD_SUCCESS = 'chat_history_load_success';
+export const CHAT_ROOM_LOAD_SUCCESS = 'chat_room_load_success';

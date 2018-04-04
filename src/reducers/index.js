@@ -2,14 +2,16 @@ import { combineReducers } from 'redux';
 import navigationReducer from './navigationReducer';
 import authReducer from './authReducer';
 import regReducer from './regReducer';
-import chatReducer from './chatReducer';
+import chatroomReducer from './chatroomReducer';
+import chatlistReducer from './chatlistReducer';
 import { LOGOUT_USER_SUCCESS } from '../actions/types';
 
 const reducer = combineReducers({
   navigationReducer,
   authReducer,
   regReducer,
-  chatReducer
+  chatroomReducer,
+  chatlistReducer
 });
 
 const rootReducer = (state, action) => {

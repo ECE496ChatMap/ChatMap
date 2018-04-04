@@ -11,7 +11,7 @@ import {
   CHECKING_SESSION_FAIL,
   NAVIGATE_TO_REG
 } from './types';
-import { loadMessages, unloadMessages } from './chatActions';
+import { loadMessages, unloadMessages, loadChatHistory } from './chatActions';
 import firebase from 'firebase';
 
 export const navtoReg = () => {
@@ -68,7 +68,7 @@ export const logoutUser = () => {
 };
 
 const loginUserSuccess = (dispatch, user) => {
-  dispatch(loadMessages());
+  dispatch(loadChatHistory(user.uid));
   dispatch({
     type: LOGIN_USER_SUCCESS,
     payload: user
