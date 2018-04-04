@@ -25,7 +25,7 @@ class Header extends Component<{}> {
         const user = this.props.user.uid;
         var username;
         var bio;
-        firebase.database().ref('/profile/' + user).once('value', (snapshot) => {
+        firebase.database().ref('/users/' + user + '/profile/').once('value', (snapshot) => {
             username = (snapshot.val() && snapshot.val().name) || 'Anonymous';
             bio = (snapshot.val() && snapshot.val().bio) || 'No bio';
             this.handleChange(username, bio);
