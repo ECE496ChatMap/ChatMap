@@ -11,6 +11,7 @@ import RegScreen from '../screens/regScreen';
 import notificationSettingScreen from '../screens/notificationSettingScreen';
 import displayScreen from '../screens/displayScreen';
 import editProfileScreen from '../screens/EditProfile'
+import DetailScreen from '../screens/DetailScreen';
 /*const chatNavigator = StackNavigator({
   list: { screen: ListScreen },
   chat: { screen: ChatScreen }
@@ -36,7 +37,6 @@ const settingNavigator = StackNavigator({
 const mainNavigator = TabNavigator(
   {
     map: { screen: MapScreen },
-    deck: { screen: DeckScreen },
     list: { screen: ListScreen },
     profile: { screen: ProfileScreen }
   },
@@ -58,7 +58,9 @@ const welcomeNavigator = StackNavigator({
   notification: { screen: notificationSettingScreen },
   display: { screen: displayScreen},
   chat: { screen: ChatScreen },
-  editProfile: {screen: editProfileScreen }
+  editProfile: {screen: editProfileScreen },
+  postList: { screen: DeckScreen },
+  postDetail: {screen: DetailScreen }
 });
 
 export default welcomeNavigator;

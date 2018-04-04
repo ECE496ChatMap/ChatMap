@@ -42,7 +42,7 @@ class editProfileScreen extends Component {
     if (value) {
       firebase
         .database()
-        .ref('profile/' + user)
+        .ref('users/' + user + '/profile')
         .set({
           name: value.name,
           bio: value.bio
@@ -52,57 +52,57 @@ class editProfileScreen extends Component {
     console.log('value: ', value);
   };
 
-    pickSingle(cropit, circular=false) {
-        const user = this.props.user.uid;
+  pickSingle(cropit, circular=false) {
+    const user = this.props.user.uid;
 
-        ImagePicker.openPicker({
-          width: 300,
-          height: 300,
-          cropping: cropit,
-          cropperCircleOverlay: circular,
-          compressImageMaxWidth: 640,
-          compressImageMaxHeight: 480,
-          compressImageQuality: 0.5,
-          compressVideoPreset: 'MediumQuality',
-          includeExif: true,
-        }).then(image => {
-          console.log('received image', image);
-          const imageRef = firebase.storage().ref(user).child("dp.jpg")
-          this.setState({
-            image: {uri: image.path, width: image.width, height: image.height, mime: image.mime},
-            images: null
-          });
-        }).catch(e => {
-          console.log(e);
-          Alert.alert(e.message ? e.message : e);
-        });
-    }
+    ImagePicker.openPicker({
+      width: 300,
+      height: 300,
+      cropping: cropit,
+      cropperCircleOverlay: circular,
+      compressImageMaxWidth: 640,
+      compressImageMaxHeight: 480,
+      compressImageQuality: 0.5,
+      compressVideoPreset: 'MediumQuality',
+      includeExif: true,
+    }).then(image => {
+      console.log('received image', image);
+      const imageRef = firebase.storage().ref(user).child("dp.jpg")
+      this.setState({
+        image: {uri: image.path, width: image.width, height: image.height, mime: image.mime},
+        images: null
+      });
+    }).catch(e => {
+      console.log(e);
+      Alert.alert(e.message ? e.message : e);
+    });
+  }
 
-    render(){
-        const { navigate } = this.props.navigation;
-        return(
-          <View>
-            <View style={styles.container}>
-                <Form 
-                    ref={c => this._form = c}
-                    type={User}
-                    options={options}
-                 />
-                <Button
-                title="Save"
-                onPress={this.handleSubmit}
-                />
-                
-            </View>
-            <View style={styles.picture}>
-                <Button
-                title="Update Profile Picture"
-                onPress={() => this.pickSingle(false)}
-                />
-            </View>
-          </View>
-        );
-    }
+  render(){
+    const { navigate } = this.props.navigation;
+    return(
+      <View>
+        <View style={styles.container}>
+            <Form
+                ref={c => this._form = c}
+                type={User}
+                options={options}
+             />
+            <Button
+            title="Save"
+            onPress={this.handleSubmit}
+            />
+
+        </View>
+        <View style={styles.picture}>
+            <Button
+            title="Update Profile Picture"
+            onPress={() => this.pickSingle(false)}
+            />
+        </View>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({

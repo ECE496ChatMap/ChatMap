@@ -6,37 +6,63 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { DeckSection } from './DeckSection';
+import * as firebase from 'firebase';
+import TopicType from '../assets/categories/TopicType.json';
 
-const DeckDetail = ({ topic, onPress }) => {
-  const { content, category, userImage } = topic;
+const DeckDetail = ({ post, onPostPress }) => {
   const {
-    thumbnailStyle,
-    headerContentStyle,
-    thumbnailContainerStyle,
-    headerTextStyle,
-    imageStyle
-  } = styles;
+    content,
+    category,
+    key,
+    issuer,
+    timestamp
+  } = post;
+
+  // query issuer's info
+  var issuerUserProfile = {
+    name: 'Anonymous',
+    bio: 'This person doesn\'t have a bio yet.',
+    pic: require('../assets/images/dummyProfile.png')
+  };
+  firebase.database().ref('/users/' + issuer).once('value').then(function(snapshot) {
+    var issuerUser = snapshot.val();
+    console.log('check curUser');
+    console.log(issuerUser);
+    if (issuerUser.hasOwnProperty('profile')) {
+      if (issuerUser.profile.name !== null &&
+          issuerUser.profile.name !== '') {
+        issuerUserProfile.name = issuerUser.profile.name;
+      }
+      if (issuerUser.profile.bio !== null &&
+          issuerUser.profile.bio !== '') {
+        issuerUserProfile.bio = issuerUser.profile.bio;
+      }
+    }
+  });
+
+  var postDatetime = (new Date(timestamp)).toLocaleString();
 
   return (
     <View style={styles.container}>
       <View style={{width: 60, borderRightWidth: 1, borderColor: '#ddd'}}>
         <TouchableOpacity>
           <Image
-            source={{uri: userImage}}
+            source={issuerUserProfile.pic}
             style={{width: 60, height: 60}}
           />
         </TouchableOpacity>
       </View>
       <View style={{flexDirection: 'column', flex: 1}}>
-        <TouchableOpacity onPress={onPress} style={{flexDirection: 'column'}}>
+        <TouchableOpacity onPress={onPostPress} style={{flexDirection: 'column'}}>
           <DeckSection>
             <View style={styles.contentStyle}>
-              <Text>Topic: {content}</Text>
+              <Text style={{fontSize: 18}}>{issuerUserProfile.name}: {content}</Text>
             </View>
           </DeckSection>
           <DeckSection>
-            <View style={styles.contentStyle}>
-              <Text>{category}</Text>
+            <View style={styles.subcontentStyle}>
+              <Text style={{color: TopicType[category], fontWeight: 'bold'}}>{category}</Text>
+              <Text> posted on {postDatetime}</Text>
             </View>
           </DeckSection>
         </TouchableOpacity>
@@ -62,6 +88,11 @@ const styles = {
     flexDirection: 'row'
   },
   contentStyle: {
+    justifyContent: 'space-around',
+    alignItems: 'center'
+  },
+  subcontentStyle: {
+    flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center'
   },

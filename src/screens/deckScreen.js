@@ -8,8 +8,7 @@ import {
 import { connect } from 'react-redux';
 import firebase from 'firebase';
 import {
-  DeckDetail,
-  TopicDetailForm
+  DeckDetail
 } from '../components';
 
 const screen = Dimensions.get('window');
@@ -32,125 +31,39 @@ class DeckScreen extends Component {
 
   constructor() {
     super();
-    this.state = {
-      myTopics: null,
-      isShowDetail: false,
-      curTid: null
-    };
-  }
-
-  componentDidMount() {
-    // listen to markers data
-    var topicsRef = firebase.database().ref('topics');
-    topicsRef.on('value', function(snapshot) {
-      var allTopics = snapshot.val();
-      var curMarkers = [];
-      var topicId = 0;
-      for (var topicKey in allTopics) {
-        var curTopic = allTopics[topicKey];
-        var myTopic = {
-          tid: topicId,
-          topic: {
-            content: curTopic.content,
-            category: curTopic.category,
-            timestamp: curTopic.timestamp,
-            userImage: img
-          }
-        };
-        curMarkers.push(myTopic);
-        topicId++;
-      }
-
-      this.setState({myTopics: curMarkers});
-    }.bind(this));
-
-    console.log('didmont');
-    this.enableTopicDetailDisplay();
-  }
-
-  componentWillUnmount() {
-    // detach listener
-    firebase.database().ref('topics').off();
+    this.posts = null;
   }
 
   renderRooms = () => {
-    if (this.state.myTopics === null) {
-      return null;
+    if (this.posts === null) {
+      return (
+        <View style={{alignContent: 'center'}}>
+          <Text style={{fontSize: 15}}>Nothing Found...</Text>
+        </View>
+      );
     }
     else {
-      return this.state.myTopics.map(topic =>
+      return this.posts.map(post =>
         <DeckDetail
-          key={topic.tid}
-          topic={topic.topic}
-          onPress={() => this.setState({
-            curTid: topic.tid,
-            isShowDetail: true
+          key={post.key}
+          post={post}
+          onPostPress={() => this.props.navigation.navigate('postDetail', {
+            post: post
           })}
         />
       );
     }
   }
 
-  onEnterTopicPressed = () => {
-    // also send some indicators to database to register current user
-    // with this topic
-    this.props.navigation.navigate('list');
-  }
-
-  renderTopicDetial = () => {
-    if (this.state.isShowDetail && this.state.myTopics !== null) {
-      var curTopic = this.state.myTopics[this.state.curTid].topic;
-      return (
-        <View style={{marginTop: 30, marginLeft: 20, marginRight: 20, height: FORM_HEIGHT}}>
-          <TopicDetailForm
-            style={styles.issueFormStyle}
-            onEnterPress={this.onEnterTopicPressed.bind(this)}
-            onClosePress={() => this.setState({
-              isShowDetail: false,
-              curTid: null
-            })}
-            topic={curTopic}
-          />
-        </View>
-      );
-    }
-
-    return null;
-  }
-
-  componentWillUpdate() {
-    console.log('willupate');
-    this.enableTopicDetailDisplay();
-  }
-  //
-  // componentWillMount() {
-  //   this.enableTopicDetailDisplay();
-  // }
-
-  enableTopicDetailDisplay() {
-    console.log(this.props);
-    if (this.props.navigation.state.params !== undefined &&
-        this.props.navigation.state.params !== null) {
-      console.log('hereeeeeeeeeee');
-      var tid = this.props.navigation.state.params.markerId;
-      this.setState({curTid: tid, isShowDetail: true});
-      // this.props.navigation.state.params = null;
-    }
-  }
-
   render() {
-    if (this.state.isShowDetail) {
-      return this.renderTopicDetial();
-    }
-    else {
-      return (
-        <View style={{ height: '100%', width: '100%', zIndex: -1}}>
-          <ScrollView>
-            {this.renderRooms()}
-          </ScrollView>
-        </View>
-      );
-    }
+    this.posts = this.props.navigation.state.params.posts;
+    return (
+      <View style={{ height: '100%', width: '100%', zIndex: -1}}>
+        <ScrollView>
+          {this.renderRooms()}
+        </ScrollView>
+      </View>
+    );
   }
 }
 

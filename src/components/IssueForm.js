@@ -20,29 +20,47 @@ class IssueForm extends Component {
     };
   }
 
-  testInput = null;
+  textInput = null;
 
   clearText() {
-    this.testInput.setNativeProps({ text: '' });
+    this.textInput.setNativeProps({ text: '' });
   }
 
   render() {
     const {
-      onClosePress,
       onContentChange,
       onSlidingComplete,
       onPickerValueChange,
       pickerSelectedValue,
-      onSubmitPress,
       style,
-      userImage,
-      userName
+      userProfile
     } = this.props;
+
+    const {
+      onClosePress,
+      onSubmitPress
+    } = this.props;
+
+    const {
+      name,
+      bio,
+      pic
+    } = userProfile;
+
+    this.onClosePress = () => {
+      this.clearText();
+      onClosePress();
+    };
+
+    this.onSubmitPress = () => {
+      this.clearText();
+      onSubmitPress();
+    };
 
     return (
       <CardSection style={[styles.container, style]}>
         <View style={styles.closeBox}>
-          <TouchableOpacity onPress={onClosePress}>
+          <TouchableOpacity onPress={this.onClosePress}>
             <Image
               source={require('../assets/images/close.png')}
               style={{width: 16, height: 16}}
@@ -52,19 +70,25 @@ class IssueForm extends Component {
 
         <CardSection style={styles.header}>
           <Image
-            source={{uri: userImage}}
+            source={pic}
             style={{width: 60, height: 60}}
           />
+
           <View style={styles.nameBox}>
             <Text style={styles.nameText}>
-              {userName}
+              {name}
+            </Text>
+            <Text>
+              {bio}
             </Text>
           </View>
+
+
         </CardSection>
 
         <CardSection style={styles.topicBox}>
           <View style={{flexDirection: 'row'}}>
-            <Text style={styles.topicText}>Topic: </Text>
+            <Text style={styles.topicText}>New Post: </Text>
           </View>
           <View style={{flexDirection: 'row', borderWidth: 1, borderColor: '#ddd'}}>
             <TextInput
@@ -77,7 +101,7 @@ class IssueForm extends Component {
               maxLength={100}
               blurOnSubmit={true}
               underlineColorAndroid={'rgba(0,0,0,0)'}
-              ref={element => {this.testInput = element;}}
+              ref={element => {this.textInput = element;}}
             />
           </View>
         </CardSection>
@@ -124,7 +148,7 @@ class IssueForm extends Component {
         <CardSection style={styles.buttonSection}>
           <TouchableOpacity
             style={styles.button}
-            onPress={onSubmitPress}
+            onPress={this.onSubmitPress}
           >
             <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
@@ -174,8 +198,9 @@ const styles = {
     backgroundColor: 'transparent'
   },
   nameBox: {
-    justifyContent: 'center',
-    padding: 15
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: 5
   },
   nameText: {
     fontSize: 20
